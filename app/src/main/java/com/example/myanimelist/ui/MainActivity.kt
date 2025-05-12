@@ -1,4 +1,4 @@
-package com.example.myanimelist
+package com.example.myanimelist.ui
 
 import android.os.Bundle
 import android.view.Menu
@@ -11,6 +11,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.example.myanimelist.R
 import com.example.myanimelist.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
