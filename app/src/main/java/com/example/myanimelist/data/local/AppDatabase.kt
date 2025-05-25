@@ -3,32 +3,68 @@ package com.example.myanimelist.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.myanimelist.data.local.converters.AnimeConverters
 import com.example.myanimelist.data.local.anime.AnimeDao
 import com.example.myanimelist.data.local.anime.AnimeEntity
+import com.example.myanimelist.data.local.author.AuthorDao
+import com.example.myanimelist.data.local.author.AuthorEntity
+import com.example.myanimelist.data.local.author.MangaAuthorCrossRef
 import com.example.myanimelist.data.local.common.AiredOrPublishedEntity
-import com.example.myanimelist.data.local.common.DemographicEntity
-import com.example.myanimelist.data.local.common.GenreEntity
-import com.example.myanimelist.data.local.common.ImageEntity
+import com.example.myanimelist.data.local.demographics.DemographicEntity
+import com.example.myanimelist.data.local.genre.GenreEntity
 import com.example.myanimelist.data.local.common.ImagesEntity
-import com.example.myanimelist.data.local.common.LicensorEntity
-import com.example.myanimelist.data.local.common.ProducerEntity
-import com.example.myanimelist.data.local.common.SerializationEntity
-import com.example.myanimelist.data.local.common.StudioEntity
-import com.example.myanimelist.data.local.common.ThemeEntity
-import com.example.myanimelist.data.local.converters.MangaConverters
+import com.example.myanimelist.data.local.licensor.LicensorEntity
+import com.example.myanimelist.data.local.producer.ProducerEntity
+import com.example.myanimelist.data.local.serialization.SerializationEntity
+import com.example.myanimelist.data.local.studio.StudioEntity
+import com.example.myanimelist.data.local.theme.ThemeEntity
+import com.example.myanimelist.data.local.converters.Converters
+import com.example.myanimelist.data.local.demographics.AnimeDemographicCrossRef
+import com.example.myanimelist.data.local.demographics.DemographicDao
+import com.example.myanimelist.data.local.demographics.MangaDemographicCrossRef
+import com.example.myanimelist.data.local.genre.AnimeGenreCrossRef
+import com.example.myanimelist.data.local.genre.GenreDao
+import com.example.myanimelist.data.local.genre.MangaGenreCrossRef
+import com.example.myanimelist.data.local.licensor.AnimeLicensorCrossRef
+import com.example.myanimelist.data.local.licensor.LicensorDao
 import com.example.myanimelist.data.local.manga.MangaDao
 import com.example.myanimelist.data.local.manga.MangaEntity
+import com.example.myanimelist.data.local.producer.AnimeProducerCrossRef
+import com.example.myanimelist.data.local.producer.ProducerDao
+import com.example.myanimelist.data.local.serialization.MangaSerializationCrossRef
+import com.example.myanimelist.data.local.serialization.SerializationDao
+import com.example.myanimelist.data.local.studio.AnimeStudioCrossRef
+import com.example.myanimelist.data.local.studio.StudioDao
+import com.example.myanimelist.data.local.theme.AnimeThemeCrossRef
+import com.example.myanimelist.data.local.theme.MangaThemeCrossRef
+import com.example.myanimelist.data.local.theme.ThemeDao
 
 @Database(
     entities = [
-    AnimeEntity::class, MangaEntity::class, AiredOrPublishedEntity::class,
-    DemographicEntity:: class, GenreEntity::class, ImageEntity::class,
-    ImagesEntity::class, LicensorEntity::class, ProducerEntity::class,
-    SerializationEntity::class, StudioEntity::class, ThemeEntity::class],
-    version = 1)
-@TypeConverters(AnimeConverters::class, MangaConverters::class)
+        AnimeEntity::class, MangaEntity::class,
+        AiredOrPublishedEntity::class,
+        ImagesEntity::class,
+        // Anime-only entities
+        StudioEntity::class, AnimeStudioCrossRef::class,
+        LicensorEntity::class, AnimeLicensorCrossRef::class,
+        ProducerEntity::class, AnimeProducerCrossRef::class,
+        // Manga-only entities
+        AuthorEntity::class, MangaAuthorCrossRef::class,
+        SerializationEntity::class, MangaSerializationCrossRef::class,
+        // Anime AND manga common entities
+        GenreEntity::class, AnimeGenreCrossRef::class, MangaGenreCrossRef::class,
+        DemographicEntity:: class, AnimeDemographicCrossRef::class, MangaDemographicCrossRef::class,
+        ThemeEntity::class, AnimeThemeCrossRef::class, MangaThemeCrossRef::class],
+    version = 2)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun animeDao(): AnimeDao
     abstract fun mangaDao(): MangaDao
+    abstract fun genreDao(): GenreDao
+    abstract fun demographicDao(): DemographicDao
+    abstract fun themeDao(): ThemeDao
+    abstract fun authorDao(): AuthorDao
+    abstract fun serializationDao(): SerializationDao
+    abstract fun licensorDao(): LicensorDao
+    abstract fun producerDao(): ProducerDao
+    abstract fun studioDao(): StudioDao
 }

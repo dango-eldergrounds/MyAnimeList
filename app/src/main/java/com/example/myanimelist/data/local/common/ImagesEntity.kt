@@ -2,10 +2,13 @@ package com.example.myanimelist.data.local.common
 
 import androidx.room.Embedded
 import androidx.room.Entity
-import com.example.myanimelist.data.remote.common.Image
+import androidx.room.PrimaryKey
 
-@Entity("images")
+@Entity
 data class ImagesEntity(
-    @Embedded val jpg: ImageEntity,
-    @Embedded val webp: ImageEntity
+    // Use @PrimaryKey with autoGenerate to create a unique ID for each ImagesEntity
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    // Use the prefix parameter in @Embedded to distinguish the columns:
+    @Embedded(prefix = "jpg_") val jpg: ImageEntity,
+    @Embedded(prefix = "webp_") val webp: ImageEntity
 )
