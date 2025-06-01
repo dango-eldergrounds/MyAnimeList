@@ -8,12 +8,14 @@ import com.example.myanimelist.data.local.demographics.MangaDemographicCrossRef
 import com.example.myanimelist.data.local.genre.GenreDao
 import com.example.myanimelist.data.local.genre.MangaGenreCrossRef
 import com.example.myanimelist.data.local.manga.MangaDao
+import com.example.myanimelist.data.local.manga.toDto
 import com.example.myanimelist.data.local.serialization.MangaSerializationCrossRef
 import com.example.myanimelist.data.local.serialization.SerializationDao
 import com.example.myanimelist.data.local.theme.MangaThemeCrossRef
 import com.example.myanimelist.data.local.theme.ThemeDao
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.ApiService
+import com.example.myanimelist.data.remote.anime.toDto
 import com.example.myanimelist.data.remote.common.SerializationDto
 import com.example.myanimelist.data.remote.common.toEntity
 import com.example.myanimelist.data.remote.manga.MangaDto
@@ -32,11 +34,37 @@ class MangaRepository @Inject constructor(
     private val serializationDao: SerializationDao
 ) {
     fun getTopManga(): Flow<ApiResponse<List<MangaDto>>> = flow {
-        emit(ApiResponse.Loading)
+
+        // By default it gets Top 10 but we can change it later
+        val cachedManga = mangaDao.getTopManga().map { it.toDto() }
+        if (cachedManga.isNotEmpty()) {
+            emit(ApiResponse.Success(cachedManga))
+        } else {
+            emit(ApiResponse.Loading)
+        }
+
         try {
             val result = apiService.getTopManga().data
             printResult(result)
             saveResultToRoom(result)
+            emit(ApiResponse.Success(result))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+        }
+    }
+
+    fun getMangaWithId(malId: Int): Flow<ApiResponse<MangaDto>> = flow {
+        val cachedManga = mangaDao.getMangaById(malId)?.toDto()
+        if (cachedManga != null) {
+            emit(ApiResponse.Success(cachedManga))
+        } else {
+            emit(ApiResponse.Loading)
+        }
+
+        try {
+            val result = apiService.getMangaById(malId)
+            printResult(listOf(result))
+            saveResultToRoom(listOf(result))
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {
             emit(ApiResponse.Error(e.message ?: "Unknown error"))

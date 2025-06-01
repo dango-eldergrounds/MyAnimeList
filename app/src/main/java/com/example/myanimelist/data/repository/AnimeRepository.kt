@@ -18,6 +18,7 @@ import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.ApiService
 import com.example.myanimelist.data.remote.anime.AnimeDto
 import com.example.myanimelist.data.remote.common.toEntity
+import com.example.myanimelist.data.remote.anime.toDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -33,20 +34,44 @@ class AnimeRepository @Inject constructor(
     private val producerDao: ProducerDao
 ) {
     fun getTopAnime(): Flow<ApiResponse<List<AnimeDto>>> = flow {
-        emit(ApiResponse.Loading)
+        // Emit cached data from Room first
+        val cachedAnime = animeDao.getTopAnime().map { it.toDto() }
+        if (cachedAnime.isNotEmpty()) {
+            emit(ApiResponse.Success(cachedAnime))
+        } else {
+            emit(ApiResponse.Loading)
+        }
+
         try {
             val response = apiService.getTopAnime()
             val result = response.data
             saveResultToRoom(result)
-            printResult(result)
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {
-            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            if (cachedAnime.isEmpty()) {
+                emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            }
         }
     }
 
-    private fun printResult(result: List<AnimeDto>) {
-        TODO("Not yet implemented")
+    fun getAnimeById(malId: Int): Flow<ApiResponse<AnimeDto>> = flow {
+        // Emit cached data from Room first
+        val cachedAnime = animeDao.getAnimeById(malId)?.toDto()
+        if (cachedAnime != null) {
+            emit(ApiResponse.Success(cachedAnime))
+        } else {
+            emit(ApiResponse.Loading)
+        }
+
+        try {
+            val result = apiService.getAnimeById(malId)
+            saveResultToRoom(listOf(result))
+            emit(ApiResponse.Success(result))
+        } catch (e: Exception) {
+            if (cachedAnime == null) {
+                emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            }
+        }
     }
 
     private suspend fun saveResultToRoom(result: List<AnimeDto>) {

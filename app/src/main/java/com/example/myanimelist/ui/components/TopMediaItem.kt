@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,16 +19,19 @@ import coil.compose.AsyncImage
 
 @Composable
 fun TopMediaItem(
+    malId: Int,
     imageUrl: String,
     title: String,
     rank: Int,
     score: Double,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: (Int) -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onItemClick(malId) },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -36,7 +40,7 @@ fun TopMediaItem(
                 contentDescription = title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(90.dp)
+                    .size(120.dp)
                     .padding(8.dp)
             )
             Column(modifier = Modifier.padding(8.dp)) {

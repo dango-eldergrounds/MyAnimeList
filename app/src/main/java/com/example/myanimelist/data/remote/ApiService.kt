@@ -10,5 +10,11 @@ interface ApiService {
 
     @GET("top/manga")
     suspend fun getTopManga(): TopGenericResponse<MangaDto>
+
+    @GET("anime/{malId}/full")
+    suspend fun getAnimeById(malId: Int): AnimeDto
+
+    @GET("manga/{malId}/full")
+    suspend fun getMangaById(malId: Int): MangaDto
 }
 

@@ -1,4 +1,4 @@
-package com.example.myanimelist.ui.manga
+package com.example.myanimelist.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,8 +17,11 @@ class MangaViewModel @Inject constructor(
     private val repository: MangaRepository
 ) : ViewModel() {
 
-    private val _manga = MutableStateFlow<ApiResponse<List<MangaDto>>>(ApiResponse.Loading)
-    val manga: StateFlow<ApiResponse<List<MangaDto>>> = _manga
+    private val _topManga = MutableStateFlow<ApiResponse<List<MangaDto>>>(ApiResponse.Loading)
+    val topManga: StateFlow<ApiResponse<List<MangaDto>>> = _topManga
+
+    private val _selectedManga = MutableStateFlow<ApiResponse<MangaDto>>(ApiResponse.Loading)
+    val selectedManga: StateFlow<ApiResponse<MangaDto>> = _selectedManga
 
     init {
         getTopManga()
@@ -27,7 +30,15 @@ class MangaViewModel @Inject constructor(
     private fun getTopManga() {
         viewModelScope.launch {
             repository.getTopManga().collectLatest { response ->
-                _manga.value = response
+                _topManga.value = response
+            }
+        }
+    }
+
+    fun getMangaWithId(malId: Int) {
+        viewModelScope.launch {
+            repository.getMangaWithId(malId).collectLatest { response ->
+                _selectedManga.value = response
             }
         }
     }

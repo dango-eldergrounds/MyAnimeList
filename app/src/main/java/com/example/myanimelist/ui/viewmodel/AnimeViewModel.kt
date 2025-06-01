@@ -17,8 +17,11 @@ class AnimeViewModel @Inject constructor(
     private val repository: AnimeRepository
 ) : ViewModel() {
 
-    private val _anime = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
-    val anime: StateFlow<ApiResponse<List<AnimeDto>>> = _anime
+    private val _topAnime = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
+    val topAnime: StateFlow<ApiResponse<List<AnimeDto>>> = _topAnime
+
+    private val _selectedAnime = MutableStateFlow<ApiResponse<AnimeDto>>(ApiResponse.Loading)
+    val selectedAnime: StateFlow<ApiResponse<AnimeDto>> = _selectedAnime
 
     init {
         getTopAnime()
@@ -27,7 +30,16 @@ class AnimeViewModel @Inject constructor(
     private fun getTopAnime() {
         viewModelScope.launch {
             repository.getTopAnime().collectLatest { response ->
-                _anime.value = response
+                _topAnime.value = response
+            }
+        }
+    }
+
+    // Function to get Anime by ID using offline-first approach
+    fun getAnimeById(malId: Int) {
+        viewModelScope.launch {
+            repository.getAnimeById(malId).collectLatest { response ->
+                _selectedAnime.value = response
             }
         }
     }

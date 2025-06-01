@@ -11,6 +11,12 @@ interface AnimeDao {
     @Query("SELECT * FROM anime")
     suspend fun getAllAnime(): List<AnimeEntity>
 
+    @Query("SELECT * FROM anime ORDER BY score DESC LIMIT :limit")
+    suspend fun getTopAnime(limit: Int = 10): List<AnimeEntity>
+
+    @Query("SELECT * FROM anime WHERE malId = :malId")
+    suspend fun getAnimeById(malId: Int): AnimeEntity?
+
     @Query("SELECT * FROM anime")
     suspend fun getAllAnimeFull(): List<AnimeFull>
 

@@ -15,8 +15,14 @@ interface MangaDao {
     @Query("SELECT * FROM manga")
     suspend fun getAllManga(): List<MangaEntity>
 
+    @Query("SELECT * FROM MANGA ORDER BY score DESC LIMIT :limit")
+    suspend fun getTopManga(limit: Int = 10): List<MangaEntity>
+
     @Upsert
     suspend fun upsertAll(mangaList: List<MangaEntity>)
+
+    @Query("SELECT * FROM manga WHERE malId = :malId")
+    suspend fun getMangaById(malId: Int): MangaEntity?
 
     @Upsert
     suspend fun upsertAllAuthors(authorList: List<AuthorEntity>)
