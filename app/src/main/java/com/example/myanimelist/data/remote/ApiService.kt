@@ -3,6 +3,7 @@ package com.example.myanimelist.data.remote
 import com.example.myanimelist.data.remote.anime.AnimeDto
 import com.example.myanimelist.data.remote.manga.MangaDto
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 interface ApiService {
     @GET("top/anime")
@@ -15,6 +16,6 @@ interface ApiService {
     suspend fun getAnimeById(malId: Int): AnimeDto
 
     @GET("manga/{malId}/full")
-    suspend fun getMangaById(malId: Int): MangaDto
+    suspend fun getMangaById(@Path("malId") malId: Int): MangaDto
 }
 

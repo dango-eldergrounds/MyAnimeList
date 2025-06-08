@@ -44,7 +44,7 @@ class AnimeRepository @Inject constructor(
 
         try {
             val response = apiService.getTopAnime()
-            val result = response.data
+            val result = response.data.sortedBy { it.rank ?: 0 }
             saveResultToRoom(result)
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {

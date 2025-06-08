@@ -7,6 +7,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.anime.AnimeDto
@@ -149,19 +153,23 @@ private fun LazyListScope.top10MangaPart(
 fun ExpandableHeader(
     title: String,
     isExpanded: Boolean,
-    onToggleExpanded: () -> Unit
+    color: Color = MaterialTheme.colorScheme.background,
+    style: TextStyle = MaterialTheme.typography.headlineMedium,
+    onToggleExpanded: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Surface(color = MaterialTheme.colorScheme.background) {
+    Surface(color = color) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .clickable { onToggleExpanded() }
                 .padding(8.dp)
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.weight(1f)
+                style = style,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
             )
             Icon(
                 imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,

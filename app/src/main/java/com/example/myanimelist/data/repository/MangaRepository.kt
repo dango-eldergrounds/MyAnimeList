@@ -34,9 +34,8 @@ class MangaRepository @Inject constructor(
     private val serializationDao: SerializationDao
 ) {
     fun getTopManga(): Flow<ApiResponse<List<MangaDto>>> = flow {
-
         // By default it gets Top 10 but we can change it later
-        val cachedManga = mangaDao.getTopManga().map { it.toDto() }
+        var cachedManga = mangaDao.getTopManga().map { it.toDto() }
         if (cachedManga.isNotEmpty()) {
             emit(ApiResponse.Success(cachedManga))
         } else {
@@ -45,17 +44,22 @@ class MangaRepository @Inject constructor(
 
         try {
             val result = apiService.getTopManga().data
-            printResult(result)
+                .sortedBy { it.rank }
+//            printResult(result)
             saveResultToRoom(result)
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {
+            Log.e("MangaRepository", "Error fetching top manga: ${e.message}")
             emit(ApiResponse.Error(e.message ?: "Unknown error"))
         }
     }
 
     fun getMangaWithId(malId: Int): Flow<ApiResponse<MangaDto>> = flow {
+        Log.i("MangaRepository", "Fetching manga with ID: $malId")
+
         val cachedManga = mangaDao.getMangaById(malId)?.toDto()
         if (cachedManga != null) {
+            Log.i("MangaRepository", "Using cached manga with ID: $malId")
             emit(ApiResponse.Success(cachedManga))
         } else {
             emit(ApiResponse.Loading)
@@ -63,11 +67,14 @@ class MangaRepository @Inject constructor(
 
         try {
             val result = apiService.getMangaById(malId)
-            printResult(listOf(result))
+//            printResult(listOf(result))
             saveResultToRoom(listOf(result))
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {
-            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            Log.e("MangaRepository", "Error fetching manga with ID $malId : ${e.message}")
+            if (cachedManga == null) {
+                emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            }
         }
     }
 

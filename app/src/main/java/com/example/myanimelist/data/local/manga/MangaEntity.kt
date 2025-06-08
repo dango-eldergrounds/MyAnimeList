@@ -59,7 +59,7 @@ fun MangaEntity.toDto(): MangaDto {
         season = season ?: "",
         year = year ?: 0,
         images = Gson().fromJson(images, object : TypeToken<ImagesDto>() {}.type),
-        publishing = publishing ?: false,
+        publishing = publishing == true,
         chapters = chapters,
         volumes = volumes,
         genres = emptyList(), // MangaEntity does not store genres

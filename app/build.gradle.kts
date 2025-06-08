@@ -4,6 +4,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.kotlin.compose)
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {

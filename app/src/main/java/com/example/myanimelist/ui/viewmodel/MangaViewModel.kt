@@ -35,7 +35,7 @@ class MangaViewModel @Inject constructor(
         }
     }
 
-    fun getMangaWithId(malId: Int) {
+    fun getMangaById(malId: Int) {
         viewModelScope.launch {
             repository.getMangaWithId(malId).collectLatest { response ->
                 _selectedManga.value = response
