@@ -1,29 +1,27 @@
 package com.example.myanimelist.ui
-import android.R.attr.padding
-import android.app.FragmentManager.BackStackEntry
-import androidx.appcompat.widget.Toolbar
 
 import android.os.Bundle
 import android.view.Menu
-import com.google.android.material.navigation.NavigationView
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myanimelist.R
+import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.databinding.ActivityMainBinding
 import com.example.myanimelist.ui.viewmodel.AnimeViewModel
+import com.example.myanimelist.ui.viewmodel.CharacterViewModel
 import com.example.myanimelist.ui.viewmodel.MangaViewModel
+import com.example.myanimelist.ui.viewmodel.PeopleViewModel
+import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.activity.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.example.myanimelist.data.remote.ApiResponse
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -34,18 +32,22 @@ class MainActivity : AppCompatActivity() {
 
     private val animeViewModel: AnimeViewModel by viewModels()
     private val mangaViewModel: MangaViewModel by viewModels()
+    private val characterViewModel: CharacterViewModel by viewModels()
+    private val peopleViewModel: PeopleViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         // The top app bar is set up using the toolbar from ActivityMainBinding.
         setSupportActionBar(binding.appBarMain.toolbar)
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+
         // The top app bar is already configured with setupActionBarWithNavController.
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -63,14 +65,55 @@ class MainActivity : AppCompatActivity() {
                     val id = arguments?.getInt("malId") ?: 0
                     val type = arguments?.getString("mediaType") ?: "Media"
                     if (type == "anime") {
-                        animeViewModel.getAnimeById(id)
+//                        animeViewModel.getAnimeById(id)
                         collectSelectedAnime()
                     } else if (type == "manga") {
                         mangaViewModel.getMangaById(id)
                         collectSelectedManga()
+                    } else if (type == "character") {
+                        characterViewModel.getCharacterById(id)
+                        collectSelectedCharacter()
+                    } else if (type == "people") {
+                        peopleViewModel.getPeopleById(id)
+                        collectSelectedPeople()
                     }
                 }
-                R.id.nav_top10 -> supportActionBar?.title = "Top Anime & Manga"
+
+                R.id.nav_top10 -> supportActionBar?.title = "Top 10"
+            }
+        }
+    }
+
+    fun collectSelectedCharacter() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                characterViewModel.selectedCharacter.collect { response ->
+                    when (response) {
+                        is ApiResponse.Success -> {
+                            supportActionBar?.title = response.data.name
+                        }
+
+                        is ApiResponse.Error -> {}
+                        is ApiResponse.Loading -> {}
+                    }
+                }
+            }
+        }
+    }
+
+    fun collectSelectedPeople() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                peopleViewModel.selectedPeople.collect { response ->
+                    when (response) {
+                        is ApiResponse.Success -> {
+                            supportActionBar?.title = response.data.name
+                        }
+
+                        is ApiResponse.Error -> {}
+                        is ApiResponse.Loading -> {}
+                    }
+                }
             }
         }
     }
@@ -81,15 +124,12 @@ class MainActivity : AppCompatActivity() {
                 animeViewModel.selectedAnime.collect { response ->
                     when (response) {
                         is ApiResponse.Success -> {
-                            val title = response.data.title
+                            val title = response.data.anime.title
                             supportActionBar?.title = title
                         }
-                        is ApiResponse.Error -> {
-                            // Optionally show error
-                        }
-                        is ApiResponse.Loading -> {
-                            // Show loading if needed
-                        }
+
+                        is ApiResponse.Error -> {}
+                        is ApiResponse.Loading -> {}
                     }
                 }
             }
@@ -105,12 +145,8 @@ class MainActivity : AppCompatActivity() {
                             val title = response.data.title
                             supportActionBar?.title = title
                         }
-                        is ApiResponse.Error -> {
-                            // Optionally show error
-                        }
-                        is ApiResponse.Loading -> {
-                            // Show loading if needed
-                        }
+                        is ApiResponse.Error -> {}
+                        is ApiResponse.Loading -> {}
                     }
                 }
             }

@@ -18,12 +18,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
 @Composable
-fun TopMediaItem(
-    malId: Int,
-    imageUrl: String,
-    title: String,
-    rank: Int,
-    score: Double,
+fun TopCardItem(
+    malId: Int, imageUrl: String?, title: String, subtitle: String,
     modifier: Modifier = Modifier,
     onItemClick: (Int) -> Unit
 ) {
@@ -44,9 +40,42 @@ fun TopMediaItem(
                     .padding(8.dp)
             )
             Column(modifier = Modifier.padding(8.dp)) {
-                Text(text = "#$rank. $title", style = MaterialTheme.typography.titleMedium)
-                Text(text = "Score: $score", style = MaterialTheme.typography.bodySmall)
+                Text(text = title, style = MaterialTheme.typography.titleMedium)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
+}
+
+
+@Composable
+fun TopPersonItem(
+    malId: Int, rank: Int, imageUrl: String?, name: String, favorites: Int,
+    modifier: Modifier = Modifier,
+    onItemClick: (Int) -> Unit
+) {
+    TopCardItem(
+        malId = malId,
+        imageUrl = imageUrl,
+        title = "#$rank. $name",
+        subtitle = "Favorites: $favorites",
+        modifier = modifier,
+        onItemClick = onItemClick
+    )
+}
+
+@Composable
+fun TopMediaItem(
+    malId: Int, imageUrl: String?, title: String, rank: Int, score: Double,
+    modifier: Modifier = Modifier,
+    onItemClick: (Int) -> Unit
+) {
+    TopCardItem(
+        malId = malId,
+        imageUrl = imageUrl,
+        title = "#$rank. $title",
+        subtitle = "Score: $score",
+        modifier = modifier,
+        onItemClick = onItemClick
+    )
 }

@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.anime.AnimeDto
-import com.example.myanimelist.data.repository.AnimeRepository
+import com.example.myanimelist.data.remote.anime.AnimeDtoWithCharacters
+import com.example.myanimelist.data.remote.anime.AnimeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,9 +21,6 @@ class AnimeViewModel @Inject constructor(
     private val _topAnime = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
     val topAnime: StateFlow<ApiResponse<List<AnimeDto>>> = _topAnime
 
-    private val _selectedAnime = MutableStateFlow<ApiResponse<AnimeDto>>(ApiResponse.Loading)
-    val selectedAnime: StateFlow<ApiResponse<AnimeDto>> = _selectedAnime
-
     init {
         getTopAnime()
     }
@@ -35,10 +33,14 @@ class AnimeViewModel @Inject constructor(
         }
     }
 
+    private val _selectedAnime =
+        MutableStateFlow<ApiResponse<AnimeDtoWithCharacters>>(ApiResponse.Loading)
+    val selectedAnime: StateFlow<ApiResponse<AnimeDtoWithCharacters>> = _selectedAnime
+
     // Function to get Anime by ID using offline-first approach
     fun getAnimeById(malId: Int) {
         viewModelScope.launch {
-            repository.getAnimeById(malId).collectLatest { response ->
+            repository.getAnimeByIdWithCharacters(malId).collectLatest { response ->
                 _selectedAnime.value = response
             }
         }

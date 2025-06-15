@@ -1,5 +1,6 @@
-package com.example.myanimelist.data.repository
+package com.example.myanimelist.data.remote.anime
 
+import android.util.Log
 import com.example.myanimelist.data.local.anime.AnimeDao
 import com.example.myanimelist.data.local.anime.toEntity
 import com.example.myanimelist.data.local.demographics.AnimeDemographicCrossRef
@@ -16,9 +17,7 @@ import com.example.myanimelist.data.local.theme.AnimeThemeCrossRef
 import com.example.myanimelist.data.local.theme.ThemeDao
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.ApiService
-import com.example.myanimelist.data.remote.anime.AnimeDto
 import com.example.myanimelist.data.remote.common.toEntity
-import com.example.myanimelist.data.remote.anime.toDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -51,6 +50,28 @@ class AnimeRepository @Inject constructor(
             if (cachedAnime.isEmpty()) {
                 emit(ApiResponse.Error(e.message ?: "Unknown error"))
             }
+        }
+    }
+
+    fun getAnimeByIdWithCharacters(malId: Int):
+            Flow<ApiResponse<AnimeDtoWithCharacters>> = flow {
+        try {
+            Log.d("AnimeRepository", "Fetching anime with ID: $malId")
+            emit(ApiResponse.Loading)
+            val cachedAnime = animeDao.getAnimeById(malId)?.toDto()
+            if (cachedAnime != null) {
+                val charactersResult = apiService.getAnimeCharacters(malId)
+                val animeWithCharacters = AnimeDtoWithCharacters(
+                    anime = cachedAnime,
+                    characters = charactersResult.data.sortedBy { it.favorites }
+                )
+                emit(ApiResponse.Success(animeWithCharacters))
+            } else {
+                emit(ApiResponse.Error("Unknown error"))
+            }
+        } catch (e: Exception) {
+            Log.e("AnimeRepository", "Error fetching anime with ID $malId: ${e.message}")
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
         }
     }
 

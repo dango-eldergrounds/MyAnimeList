@@ -19,6 +19,15 @@
             android:id="@+id/action_nav_home_to_detailManga"
             app:destination="@id/nav_detail" />
 
+
+        <action
+            android:id="@+id/action_nav_home_to_detailCharacter"
+            app:destination="@id/nav_detail" />
+
+        <action
+            android:id="@+id/action_nav_home_to_detailPeople"
+            app:destination="@id/nav_detail" />
+
     </fragment>
 
     <fragment

@@ -3,9 +3,9 @@ package com.example.myanimelist.data.remote.manga
 import com.example.myanimelist.data.local.manga.MangaEntity
 import com.example.myanimelist.data.remote.common.AuthorDto
 import com.example.myanimelist.data.remote.common.DemographicDto
-import com.example.myanimelist.data.remote.common.PublishedDto
 import com.example.myanimelist.data.remote.common.GenreDto
 import com.example.myanimelist.data.remote.common.ImagesDto
+import com.example.myanimelist.data.remote.common.PublishedDto
 import com.example.myanimelist.data.remote.common.SerializationDto
 import com.example.myanimelist.data.remote.common.ThemeDto
 import com.google.gson.Gson
@@ -45,3 +45,28 @@ data class MangaDto(
     val serializations: List<SerializationDto>,
 )
 
+fun MangaDto.toEntity(): MangaEntity {
+    return MangaEntity(
+        malId = malId,
+        url = url,
+        title = title,
+        titleEnglish = titleEnglish,
+        titleJapanese = titleJapanese,
+        synopsis = synopsis,
+        type = type,
+        status = status,
+        rating = rating,
+        rank = rank,
+        score = score,
+        scoredBy = scoredBy,
+        popularity = popularity,
+        members = members,
+        favorites = favorites,
+        season = season,
+        year = year,
+        images = Gson().toJson(images),
+        publishing = publishing,
+        chapters = chapters,
+        volumes = volumes,
+    )
+}

@@ -9,9 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.fragment.findNavController
 import com.example.myanimelist.ui.MyAnimeListTheme
-import com.example.myanimelist.ui.viewmodel.MangaViewModel
 import com.example.myanimelist.ui.screen.top.TopScreen
 import com.example.myanimelist.ui.viewmodel.AnimeViewModel
+import com.example.myanimelist.ui.viewmodel.CharacterViewModel
+import com.example.myanimelist.ui.viewmodel.MangaViewModel
+import com.example.myanimelist.ui.viewmodel.PeopleViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,17 +30,31 @@ class HomeFragment : Fragment() {
                     val navController = findNavController()
                     val animeViewModel: AnimeViewModel = hiltViewModel()
                     val mangaViewModel: MangaViewModel = hiltViewModel()
+                    val characterViewModel: CharacterViewModel = hiltViewModel()
+                    val peopleViewModel: PeopleViewModel = hiltViewModel()
                     TopScreen(
                         animeViewModel = animeViewModel,
-                        mangaViewModel = mangaViewModel,
                         onAnimeClick = { malId ->
                             val action = HomeFragmentDirections
                                 .actionNavHomeToDetailAnime(malId, "anime")
                             navController.navigate(action)
                         },
+                        mangaViewModel = mangaViewModel,
                         onMangaClick = { malId ->
                             val action = HomeFragmentDirections
                                 .actionNavHomeToDetailManga(malId, "manga")
+                            navController.navigate(action)
+                        },
+                        characterViewModel = characterViewModel,
+                        onCharacterClick = { malId ->
+                            val action = HomeFragmentDirections
+                                .actionNavHomeToDetailCharacter(malId, "character")
+                            navController.navigate(action)
+                        },
+                        peopleViewModel = peopleViewModel,
+                        onPeopleClick = { malId ->
+                            val action = HomeFragmentDirections
+                                .actionNavHomeToDetailPeople(malId, "people")
                             navController.navigate(action)
                         }
                     )

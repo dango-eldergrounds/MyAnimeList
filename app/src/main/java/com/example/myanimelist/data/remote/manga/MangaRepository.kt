@@ -1,4 +1,4 @@
-package com.example.myanimelist.data.repository
+package com.example.myanimelist.data.remote.manga
 
 import android.util.Log
 import com.example.myanimelist.data.local.author.AuthorDao
@@ -15,11 +15,7 @@ import com.example.myanimelist.data.local.theme.MangaThemeCrossRef
 import com.example.myanimelist.data.local.theme.ThemeDao
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.ApiService
-import com.example.myanimelist.data.remote.anime.toDto
-import com.example.myanimelist.data.remote.common.SerializationDto
 import com.example.myanimelist.data.remote.common.toEntity
-import com.example.myanimelist.data.remote.manga.MangaDto
-import com.example.myanimelist.data.remote.manga.toEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -34,7 +30,7 @@ class MangaRepository @Inject constructor(
     private val serializationDao: SerializationDao
 ) {
     fun getTopManga(): Flow<ApiResponse<List<MangaDto>>> = flow {
-        // By default it gets Top 10 but we can change it later
+        // TODO: By default it gets Top 10 but we can change it later
         var cachedManga = mangaDao.getTopManga().map { it.toDto() }
         if (cachedManga.isNotEmpty()) {
             emit(ApiResponse.Success(cachedManga))
@@ -49,8 +45,9 @@ class MangaRepository @Inject constructor(
             saveResultToRoom(result)
             emit(ApiResponse.Success(result))
         } catch (e: Exception) {
-            Log.e("MangaRepository", "Error fetching top manga: ${e.message}")
-            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+            if (cachedManga.isEmpty()) {
+                Log.e("MangaRepository", "Error fetching top manga: ${e.message}")
+            }
         }
     }
 
@@ -144,7 +141,10 @@ class MangaRepository @Inject constructor(
     private fun printResult(result: List<MangaDto>) {
         result.forEach { manga ->
             val tag = "Manga-${manga.rank}"
-            Log.i(tag, "#${manga.rank}. Manga: ${manga.title} Score: ${manga.score} ScoredBy: ${manga.scoredBy}")
+            Log.i(
+                tag,
+                "#${manga.rank}. Manga: ${manga.title} Score: ${manga.score} ScoredBy: ${manga.scoredBy}"
+            )
             Log.i(tag, "EN Title: ${manga.titleEnglish} JP title: ${manga.titleJapanese}")
             Log.i(tag, "Synopsis: ${manga.synopsis ?: "N/A"}")
             Log.i(tag, "Chapters: ${manga.chapters ?: "N/A"} Volumes: ${manga.volumes ?: "N/A"}")
