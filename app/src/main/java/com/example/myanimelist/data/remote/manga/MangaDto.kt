@@ -1,6 +1,7 @@
 package com.example.myanimelist.data.remote.manga
 
 import com.example.myanimelist.data.local.manga.MangaEntity
+import com.example.myanimelist.data.remote.character.MediaCharacterDto
 import com.example.myanimelist.data.remote.common.AuthorDto
 import com.example.myanimelist.data.remote.common.DemographicDto
 import com.example.myanimelist.data.remote.common.GenreDto
@@ -10,6 +11,11 @@ import com.example.myanimelist.data.remote.common.SerializationDto
 import com.example.myanimelist.data.remote.common.ThemeDto
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+
+data class MangaDtoWithCharacters(
+    val manga: MangaDto,
+    val characters: List<MediaCharacterDto>
+)
 
 data class MangaDto(
     @SerializedName("mal_id") val malId: Int,

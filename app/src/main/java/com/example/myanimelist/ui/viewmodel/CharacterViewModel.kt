@@ -21,11 +21,7 @@ class CharacterViewModel @Inject constructor(
         MutableStateFlow<ApiResponse<List<CharacterDto>>>(ApiResponse.Loading)
     val topCharacters = _topCharacters
 
-    init {
-        getTopCharacters()
-    }
-
-    private fun getTopCharacters() {
+    fun getTopCharacters() {
         viewModelScope.launch {
             repository.getTopCharacter().collectLatest { response ->
                 _topCharacters.value = response

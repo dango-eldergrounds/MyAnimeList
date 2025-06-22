@@ -8,8 +8,10 @@ import com.example.myanimelist.data.local.anime.AnimeEntity
 import com.example.myanimelist.data.local.author.AuthorDao
 import com.example.myanimelist.data.local.author.AuthorEntity
 import com.example.myanimelist.data.local.author.MangaAuthorCrossRef
+import com.example.myanimelist.data.local.character.AnimeCharacterCrossRef
 import com.example.myanimelist.data.local.character.CharacterDao
 import com.example.myanimelist.data.local.character.CharacterEntity
+import com.example.myanimelist.data.local.character.MangaCharacterCrossRef
 import com.example.myanimelist.data.local.common.AiredOrPublishedEntity
 import com.example.myanimelist.data.local.common.ImagesEntity
 import com.example.myanimelist.data.local.converters.Converters
@@ -59,8 +61,9 @@ import com.example.myanimelist.data.local.theme.ThemeEntity
         DemographicEntity:: class, AnimeDemographicCrossRef::class, MangaDemographicCrossRef::class,
         ThemeEntity::class, AnimeThemeCrossRef::class, MangaThemeCrossRef::class,
         // Character entity
-        CharacterEntity::class, PeopleEntity::class],
-    version = 6
+        CharacterEntity::class, AnimeCharacterCrossRef::class, MangaCharacterCrossRef::class,
+        PeopleEntity::class],
+    version = 8
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

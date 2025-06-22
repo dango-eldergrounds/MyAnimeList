@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.detail.composables
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,7 +27,7 @@ fun AnimeDetailScreen(
     var isTitlesExpanded by remember { mutableStateOf(true) }
     var isCharactersExpanded by remember { mutableStateOf(true) }
 
-    val selectedAnime by animeViewModel.selectedAnime.collectAsState()
+    val selectedAnime by animeViewModel.selectedAnimeWithCharacters.collectAsState()
 
     when (selectedAnime) {
         is ApiResponse.Loading -> {
@@ -41,6 +42,10 @@ fun AnimeDetailScreen(
             val animeWithCharacters = (selectedAnime as ApiResponse
             .Success<AnimeDtoWithCharacters>).data
             val anime = animeWithCharacters.anime
+            Log.d(
+                "AnimeDetailScreen",
+                "Anime loaded: ${anime.title} Characters: ${animeWithCharacters.characters.count()}"
+            )
             DetailScreen(
                 imageUrl = anime.images.jpg.largeImageUrl,
                 title = anime.title,

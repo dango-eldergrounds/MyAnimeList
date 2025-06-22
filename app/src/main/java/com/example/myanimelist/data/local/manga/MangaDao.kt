@@ -6,9 +6,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.myanimelist.data.local.author.AuthorEntity
 import com.example.myanimelist.data.local.author.MangaAuthorCrossRef
-import com.example.myanimelist.data.local.demographics.MangaWithDemographics
-import com.example.myanimelist.data.local.serialization.MangaWithSerialization
-import com.example.myanimelist.data.local.theme.MangaWithTheme
+import com.example.myanimelist.data.local.character.MangaWithCharacters
 
 @Dao
 interface MangaDao {
@@ -23,6 +21,10 @@ interface MangaDao {
 
     @Query("SELECT * FROM manga WHERE malId = :malId")
     suspend fun getMangaById(malId: Int): MangaEntity?
+
+    @Transaction
+    @Query("SELECT * FROM manga WHERE malId = :mangaId")
+    suspend fun getMangaWithCharacters(mangaId: Int): MangaWithCharacters?
 
     @Upsert
     suspend fun upsertAllAuthors(authorList: List<AuthorEntity>)

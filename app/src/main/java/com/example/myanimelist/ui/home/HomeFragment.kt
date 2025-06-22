@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +33,14 @@ class HomeFragment : Fragment() {
                     val mangaViewModel: MangaViewModel = hiltViewModel()
                     val characterViewModel: CharacterViewModel = hiltViewModel()
                     val peopleViewModel: PeopleViewModel = hiltViewModel()
+
+                    LaunchedEffect(Unit) {
+                        animeViewModel.getTopAnime()
+                        mangaViewModel.getTopManga()
+                        characterViewModel.getTopCharacters()
+                        peopleViewModel.getTopPeople()
+                    }
+                    
                     TopScreen(
                         animeViewModel = animeViewModel,
                         onAnimeClick = { malId ->

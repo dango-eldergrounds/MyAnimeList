@@ -1,6 +1,7 @@
 package com.example.myanimelist.ui.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,7 +49,8 @@ class DetailFragment : Fragment() {
 
         if (type == "anime") {
             LaunchedEffect(malId) {
-                animeViewModel.getAnimeById(malId)
+                Log.d("DetailFragment", "Fetching anime with ID: $malId")
+                animeViewModel.getAnimeByIdWithCharacters(malId)
             }
             AnimeDetailScreen(animeViewModel, navController)
         } else if (type == "manga") {

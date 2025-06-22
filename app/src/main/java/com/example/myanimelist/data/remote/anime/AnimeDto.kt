@@ -1,7 +1,7 @@
 package com.example.myanimelist.data.remote.anime
 
 import com.example.myanimelist.data.local.anime.AnimeEntity
-import com.example.myanimelist.data.remote.character.CharacterDto
+import com.example.myanimelist.data.remote.character.MediaCharacterDto
 import com.example.myanimelist.data.remote.common.AiredDto
 import com.example.myanimelist.data.remote.common.DemographicDto
 import com.example.myanimelist.data.remote.common.GenreDto
@@ -16,7 +16,7 @@ import com.google.gson.reflect.TypeToken
 
 data class AnimeDtoWithCharacters(
     val anime: AnimeDto,
-    @SerializedName("characters") val characters: List<CharacterDto>
+    val characters: List<MediaCharacterDto>
 )
 
 data class AnimeDto (

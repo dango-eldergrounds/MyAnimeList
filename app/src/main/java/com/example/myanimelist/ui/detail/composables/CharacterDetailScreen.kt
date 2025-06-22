@@ -125,7 +125,7 @@ fun CharacterDetailScreen(
             val character = (selectedCharacter as ApiResponse.Success<CharacterDto>).data
             CharacterDetailScreen(
                 imageUrl = character.images.jpg.imageUrl,
-                name = character.name,
+                name = character.name ?: "",
                 nameKanji = character.nameKanji ?: "",
                 nicknames = character.nicknames ?: emptyList(),
                 about = character.about ?: "",

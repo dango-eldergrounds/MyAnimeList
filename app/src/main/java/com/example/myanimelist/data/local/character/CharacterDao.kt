@@ -2,6 +2,7 @@ package com.example.myanimelist.data.local.character
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 
 @Dao
@@ -17,4 +18,12 @@ interface CharacterDao {
 
     @Query("SELECT * FROM character WHERE malId = :malId")
     suspend fun getCharacterById(malId: Int): CharacterEntity?
+
+    @Transaction
+    @Upsert
+    suspend fun upsertAnimeCrossRefs(crossRefs: List<AnimeCharacterCrossRef>)
+
+    @Transaction
+    @Upsert
+    suspend fun upsertMangaCrossRefs(crossRefs: List<MangaCharacterCrossRef>)
 }

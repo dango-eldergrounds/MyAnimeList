@@ -5,11 +5,17 @@ import com.example.myanimelist.data.remote.common.ImagesDto
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
+data class MediaCharacterDto(
+    val character: CharacterDto,
+    val favorites: Int,
+    val role: String = "Unknown"
+)
+
 data class CharacterDto(
     @SerializedName("mal_id") val malId: Int,
     val url: String,
     val images: ImagesDto,
-    val name: String,
+    val name: String?,
     @SerializedName("name_kanji") val nameKanji: String?,
     val nicknames: List<String>?,
     val favorites: Int,
@@ -21,7 +27,7 @@ fun CharacterDto.toEntity(): CharacterEntity {
         malId = malId,
         url = url,
         images = Gson().toJson(images),
-        name = name,
+        name = name ?: "",
         nameKanji = nameKanji ?: "",
         nicknames = Gson().toJson(nicknames),
         favorites = favorites,

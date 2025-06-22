@@ -59,6 +59,7 @@ android {
 dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
+    implementation(libs.okhttp.logging)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

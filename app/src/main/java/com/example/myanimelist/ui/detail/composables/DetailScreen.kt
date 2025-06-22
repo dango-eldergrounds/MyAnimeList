@@ -1,7 +1,9 @@
 package com.example.myanimelist.ui.detail.composables
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,8 +19,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.myanimelist.data.remote.character.CharacterDto
-import com.example.myanimelist.ui.components.TopPersonItem
+import com.example.myanimelist.data.remote.character.MediaCharacterDto
+import com.example.myanimelist.ui.components.CardItemHalfWidth
 import com.example.myanimelist.ui.screen.top.ExpandableHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,11 +31,10 @@ fun DetailScreen(
     isTitlesExpanded: Boolean = false, onTitlesExpanded: () -> Unit = { },
     synopsis: String = "",
     isSynopsisExpanded: Boolean = false, onSynopsisExpanded: () -> Unit = { },
-    characters: List<CharacterDto> = emptyList(),
+    characters: List<MediaCharacterDto> = emptyList(),
     onCharacterClick: (Int) -> Unit = { },
     isCharactersExpanded: Boolean = false, onCharactersExpanded: () -> Unit = { }
-)
-{
+) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -131,25 +132,44 @@ fun DetailScreen(
                 isExpanded = isTitlesExpanded,
                 color = MaterialTheme.colorScheme.primaryContainer,
                 style = MaterialTheme.typography.headlineSmall,
-                onToggleExpanded = { onTitlesExpanded() }
+                onToggleExpanded = { onCharactersExpanded() }
             )
         }
         item {
             AnimatedVisibility(isCharactersExpanded) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    characters.forEachIndexed { index, character ->
-                        TopPersonItem(
-                            malId = character.malId,
-                            rank = index + 1,
-                            imageUrl = try {
-                                character.images.jpg.imageUrl
-                            } catch (e: Exception) {
-                                "" // Placeholder image
-                            },
-                            name = character.name,
-                            favorites = character.favorites,
-                            onItemClick = { onCharacterClick(character.malId) }
-                        )
+                    Log.d("DetailScreen", "Characters count: ${characters.size}")
+                    characters.chunked(2).forEachIndexed { rowIndex, pair ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            pair.forEachIndexed { columnIndex, mediaCharacter ->
+                                val index = rowIndex * 2 + columnIndex
+                                if (index >= 10) return@forEachIndexed // Still limit to top 10
+                                val character = mediaCharacter.character
+                                CardItemHalfWidth(
+                                    malId = character.malId,
+                                    title = "#" + (index + 1) + ". " + character.name,
+                                    imageUrl = try {
+                                        character.images.jpg.imageUrl
+                                    } catch (e: Exception) {
+                                        "" // Placeholder image
+                                    },
+                                    modifier = Modifier.weight(0.5f),
+                                    imageSize = 120,
+                                    subtitle = "Favorites: " + mediaCharacter.favorites,
+                                    onItemClick = { onCharacterClick(character.malId) }
+                                )
+                            }
+                        }
+                        // Fill the second half if it's a single-item row
+                        if (pair.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }

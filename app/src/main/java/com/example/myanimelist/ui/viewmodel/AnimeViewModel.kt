@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myanimelist.data.remote.ApiResponse
@@ -21,11 +22,7 @@ class AnimeViewModel @Inject constructor(
     private val _topAnime = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
     val topAnime: StateFlow<ApiResponse<List<AnimeDto>>> = _topAnime
 
-    init {
-        getTopAnime()
-    }
-
-    private fun getTopAnime() {
+    fun getTopAnime() {
         viewModelScope.launch {
             repository.getTopAnime().collectLatest { response ->
                 _topAnime.value = response
@@ -33,14 +30,28 @@ class AnimeViewModel @Inject constructor(
         }
     }
 
-    private val _selectedAnime =
+    private val _selectedAnimeWithCharacters =
         MutableStateFlow<ApiResponse<AnimeDtoWithCharacters>>(ApiResponse.Loading)
-    val selectedAnime: StateFlow<ApiResponse<AnimeDtoWithCharacters>> = _selectedAnime
+    val selectedAnimeWithCharacters: StateFlow<ApiResponse<AnimeDtoWithCharacters>> =
+        _selectedAnimeWithCharacters
 
     // Function to get Anime by ID using offline-first approach
+    fun getAnimeByIdWithCharacters(malId: Int) {
+        viewModelScope.launch {
+            repository.getAnimeWithCharactersById(malId).collectLatest { response ->
+                _selectedAnimeWithCharacters.value = response
+            }
+        }
+    }
+
+    private val _selectedAnime =
+        MutableStateFlow<ApiResponse<AnimeDto>>(ApiResponse.Loading)
+    val selectedAnime: StateFlow<ApiResponse<AnimeDto>> = _selectedAnime
+
     fun getAnimeById(malId: Int) {
         viewModelScope.launch {
-            repository.getAnimeByIdWithCharacters(malId).collectLatest { response ->
+            repository.getAnimeById(malId).collectLatest { response ->
+                Log.d("AnimeViewModel", "Fetching anime with ID: $malId")
                 _selectedAnime.value = response
             }
         }

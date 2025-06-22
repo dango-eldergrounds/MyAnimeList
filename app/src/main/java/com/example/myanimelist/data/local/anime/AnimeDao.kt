@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.example.myanimelist.data.local.character.AnimeWithCharacters
 
 @Dao
 interface AnimeDao {
@@ -16,6 +17,10 @@ interface AnimeDao {
 
     @Query("SELECT * FROM anime WHERE malId = :malId")
     suspend fun getAnimeById(malId: Int): AnimeEntity?
+
+    @Transaction
+    @Query("SELECT * FROM anime WHERE malId = :animeId")
+    suspend fun getAnimeWithCharacters(animeId: Int): AnimeWithCharacters?
 
     @Query("SELECT * FROM anime")
     suspend fun getAllAnimeFull(): List<AnimeFull>

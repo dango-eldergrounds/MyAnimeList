@@ -2,7 +2,11 @@ package com.example.myanimelist.data.remote.anime
 
 import android.util.Log
 import com.example.myanimelist.data.local.anime.AnimeDao
+import com.example.myanimelist.data.local.anime.AnimeEntity
 import com.example.myanimelist.data.local.anime.toEntity
+import com.example.myanimelist.data.local.character.AnimeCharacterCrossRef
+import com.example.myanimelist.data.local.character.CharacterDao
+import com.example.myanimelist.data.local.character.toDto
 import com.example.myanimelist.data.local.demographics.AnimeDemographicCrossRef
 import com.example.myanimelist.data.local.demographics.DemographicDao
 import com.example.myanimelist.data.local.genre.AnimeGenreCrossRef
@@ -17,6 +21,8 @@ import com.example.myanimelist.data.local.theme.AnimeThemeCrossRef
 import com.example.myanimelist.data.local.theme.ThemeDao
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.ApiService
+import com.example.myanimelist.data.remote.character.MediaCharacterDto
+import com.example.myanimelist.data.remote.character.toEntity
 import com.example.myanimelist.data.remote.common.toEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -30,7 +36,8 @@ class AnimeRepository @Inject constructor(
     private val themeDao: ThemeDao,
     private val studioDao: StudioDao,
     private val licensorDao: LicensorDao,
-    private val producerDao: ProducerDao
+    private val producerDao: ProducerDao,
+    private val characterDao: CharacterDao
 ) {
     fun getTopAnime(): Flow<ApiResponse<List<AnimeDto>>> = flow {
         // Emit cached data from Room first
@@ -53,26 +60,76 @@ class AnimeRepository @Inject constructor(
         }
     }
 
-    fun getAnimeByIdWithCharacters(malId: Int):
+    fun getAnimeWithCharactersById(malId: Int):
             Flow<ApiResponse<AnimeDtoWithCharacters>> = flow {
-        try {
-            Log.d("AnimeRepository", "Fetching anime with ID: $malId")
-            emit(ApiResponse.Loading)
-            val cachedAnime = animeDao.getAnimeById(malId)?.toDto()
-            if (cachedAnime != null) {
-                val charactersResult = apiService.getAnimeCharacters(malId)
+
+        Log.d("AnimeRepository", "Fetching anime+characters with ID: $malId")
+        emit(ApiResponse.Loading)
+
+        val cachedAnime = animeDao.getAnimeById(malId)?.toDto()
+        if (cachedAnime == null) {
+            emit(ApiResponse.Error("Could not get cached anime with ID $malId from Room"))
+            return@flow
+        }
+
+        val cachedAnimeWithCharacters = animeDao.getAnimeWithCharacters(malId)
+
+        if (cachedAnimeWithCharacters != null) {
+            val characters = cachedAnimeWithCharacters.characters.map { it.toDto() }
+            if (characters.count() > 0) {
                 val animeWithCharacters = AnimeDtoWithCharacters(
                     anime = cachedAnime,
-                    characters = charactersResult.data.sortedBy { it.favorites }
+                    characters = characters.map {
+                        MediaCharacterDto(character = it, favorites = it.favorites)
+                    }
+                )
+                Log.d(
+                    "AnimeRepository",
+                    "Returning  ${characters.count()} cached characters for anime ID: $malId"
                 )
                 emit(ApiResponse.Success(animeWithCharacters))
+                return@flow
             } else {
-                emit(ApiResponse.Error("Unknown error"))
+                Log.d("AnimeRepository", "Character count in Room for anime $malId is 0")
             }
-        } catch (e: Exception) {
-            Log.e("AnimeRepository", "Error fetching anime with ID $malId: ${e.message}")
-            emit(ApiResponse.Error(e.message ?: "Unknown error"))
         }
+
+        try {
+            val charactersResult = apiService.getAnimeCharacters(malId)
+            Log.d("AnimeRepository", "Fetching anime characters with ID: $malId")
+            var charactersSorted = charactersResult.data
+            val animeWithCharacters = AnimeDtoWithCharacters(
+                anime = cachedAnime,
+                characters = charactersSorted
+            )
+            saveCharactersToRoom(cachedAnime.toEntity(), charactersSorted)
+            emit(ApiResponse.Success(animeWithCharacters))
+        } catch (e: Exception) {
+            val animeWithNoCharacters = AnimeDtoWithCharacters(
+                anime = cachedAnime,
+                characters = emptyList()
+            )
+            emit(ApiResponse.Success(animeWithNoCharacters))
+            Log.e(
+                "AnimeRepository",
+                "Error fetching characters of anime with ID $malId: ${e.message}"
+            )
+        }
+    }
+
+    suspend fun saveCharactersToRoom(
+        animeEntity: AnimeEntity,
+        characters: List<MediaCharacterDto>
+    ) {
+        var characterList = characters.map { it.character.toEntity() }
+        characterDao.upsertAll(characterList)
+        val characterCrossRefs = characters.map { characterDto ->
+            AnimeCharacterCrossRef(
+                animeId = animeEntity.malId,
+                characterId = characterDto.character.malId
+            )
+        }
+        characterDao.upsertAnimeCrossRefs(characterCrossRefs)
     }
 
     fun getAnimeById(malId: Int): Flow<ApiResponse<AnimeDto>> = flow {
@@ -80,6 +137,7 @@ class AnimeRepository @Inject constructor(
         val cachedAnime = animeDao.getAnimeById(malId)?.toDto()
         if (cachedAnime != null) {
             emit(ApiResponse.Success(cachedAnime))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }

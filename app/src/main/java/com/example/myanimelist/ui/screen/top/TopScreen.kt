@@ -50,6 +50,7 @@ fun TopScreen(
     characterViewModel: CharacterViewModel, onCharacterClick: (Int) -> Unit = {},
     peopleViewModel: PeopleViewModel, onPeopleClick: (Int) -> Unit = {}
 ) {
+
     val topAnimeState by animeViewModel.topAnime.collectAsState()
     val topMangaState by mangaViewModel.topManga.collectAsState()
     val topCharacterState by characterViewModel.topCharacters.collectAsState()
@@ -78,6 +79,8 @@ fun TopScreen(
                 )
             }
         }
+
+//       return@LazyColumn // ! Return early to avoid unnecessary processing
 
         // Manga Section
         if (topMangaState is ApiResponse.Loading) {
@@ -209,6 +212,7 @@ private fun LazyListScope.top10PeoplePart(
                             imageUrl = person.images.jpg.imageUrl,
                             name = person.name + " (" + person.familyName + person.givenName + ")",
                             favorites = person.favorites,
+                            imageSize = 80,
                             onItemClick = { onPersonClick(person.malId) }
                         )
                     }
@@ -244,6 +248,7 @@ private fun LazyListScope.top10CharactersPart(
                             imageUrl = character.images.jpg.imageUrl,
                             name = character.name,
                             favorites = character.favorites,
+                            imageSize = 80,
                             onItemClick = { onCharacterClick(character.malId) }
                         )
                     }

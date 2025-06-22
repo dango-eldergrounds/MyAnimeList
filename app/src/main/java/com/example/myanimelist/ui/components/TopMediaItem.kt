@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,7 @@ import coil.compose.AsyncImage
 @Composable
 fun TopCardItem(
     malId: Int, imageUrl: String?, title: String, subtitle: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier, imageSize: Int = 120,
     onItemClick: (Int) -> Unit
 ) {
     Card(
@@ -36,7 +37,7 @@ fun TopCardItem(
                 contentDescription = title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(imageSize.dp)
                     .padding(8.dp)
             )
             Column(modifier = Modifier.padding(8.dp)) {
@@ -47,11 +48,50 @@ fun TopCardItem(
     }
 }
 
+@Composable
+fun CardItemHalfWidth(
+    malId: Int, imageUrl: String?,
+    title: String, subtitle: String,
+    modifier: Modifier = Modifier,
+    imageSize: Int = 120,
+    onItemClick: (Int) -> Unit
+) {
+    Log.d(
+        "CardItemHalfWidth",
+        "malId: $malId, imageUrl: $imageUrl, title: $title, subtitle: $subtitle"
+    )
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onItemClick(malId) },
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(imageSize.dp)
+                    .padding(8.dp)
+            )
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(text = title, style = MaterialTheme.typography.titleMedium)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
 
 @Composable
 fun TopPersonItem(
-    malId: Int, rank: Int, imageUrl: String?, name: String, favorites: Int,
+    malId: Int, rank: Int, imageUrl: String?,
+    name: String?,
+    favorites: Int,
     modifier: Modifier = Modifier,
+    imageSize: Int = 120,
     onItemClick: (Int) -> Unit
 ) {
     TopCardItem(
@@ -60,6 +100,7 @@ fun TopPersonItem(
         title = "#$rank. $name",
         subtitle = "Favorites: $favorites",
         modifier = modifier,
+        imageSize = imageSize,
         onItemClick = onItemClick
     )
 }

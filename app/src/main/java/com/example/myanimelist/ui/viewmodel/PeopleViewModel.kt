@@ -18,11 +18,7 @@ class PeopleViewModel @Inject constructor(
     private val _topPeople = MutableStateFlow<ApiResponse<List<PeopleDto>>>(ApiResponse.Loading)
     val topPeople = _topPeople
 
-    init {
-        getTopPeople()
-    }
-
-    private fun getTopPeople() {
+    fun getTopPeople() {
         viewModelScope.launch {
             repository.getTopPeople().collectLatest { response ->
                 _topPeople.value = response

@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
                     val id = arguments?.getInt("malId") ?: 0
                     val type = arguments?.getString("mediaType") ?: "Media"
                     if (type == "anime") {
-//                        animeViewModel.getAnimeById(id)
+                        animeViewModel.getAnimeById(id)
                         collectSelectedAnime()
                     } else if (type == "manga") {
                         mangaViewModel.getMangaById(id)
@@ -78,7 +78,6 @@ class MainActivity : AppCompatActivity() {
                         collectSelectedPeople()
                     }
                 }
-
                 R.id.nav_top10 -> supportActionBar?.title = "Top 10"
             }
         }
@@ -124,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                 animeViewModel.selectedAnime.collect { response ->
                     when (response) {
                         is ApiResponse.Success -> {
-                            val title = response.data.anime.title
+                            val title = response.data.title
                             supportActionBar?.title = title
                         }
 
