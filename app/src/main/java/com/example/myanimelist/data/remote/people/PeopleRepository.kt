@@ -16,6 +16,7 @@ class PeopleRepository @Inject constructor(
         var cachedPeople = peopleDao.getTopPeople().map { it.toDto() }
         if (cachedPeople.isNotEmpty()) {
             emit(ApiResponse.Success(cachedPeople))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }

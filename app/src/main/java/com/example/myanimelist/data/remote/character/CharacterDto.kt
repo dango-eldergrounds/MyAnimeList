@@ -13,7 +13,7 @@ data class MediaCharacterDto(
 
 data class CharacterDto(
     @SerializedName("mal_id") val malId: Int,
-    val url: String,
+    val url: String?,
     val images: ImagesDto,
     val name: String?,
     @SerializedName("name_kanji") val nameKanji: String?,
@@ -22,10 +22,14 @@ data class CharacterDto(
     val about: String?
 )
 
+data class CharacterFullDto(
+    @SerializedName("data") val character: CharacterDto
+)
+
 fun CharacterDto.toEntity(): CharacterEntity {
     return CharacterEntity(
         malId = malId,
-        url = url,
+        url = url ?: "",
         images = Gson().toJson(images),
         name = name ?: "",
         nameKanji = nameKanji ?: "",

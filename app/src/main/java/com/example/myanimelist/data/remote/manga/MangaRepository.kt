@@ -41,6 +41,7 @@ class MangaRepository @Inject constructor(
         var cachedManga = mangaDao.getTopManga().map { it.toDto() }
         if (cachedManga.isNotEmpty()) {
             emit(ApiResponse.Success(cachedManga))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }
@@ -99,6 +100,7 @@ class MangaRepository @Inject constructor(
             characters = charactersSorted
         )
         saveCharactersToRoom(cachedManga.toEntity(), charactersSorted)
+        emit(ApiResponse.Success(mangaWithCharacters))
     }
 
     suspend fun saveCharactersToRoom(
@@ -110,7 +112,9 @@ class MangaRepository @Inject constructor(
         val characterCrossRefs = characters.map { characterDto ->
             MangaCharacterCrossRef(
                 mangaId = mangaEntity.malId,
-                characterId = characterDto.character.malId
+                characterId = characterDto.character.malId,
+                role = characterDto.role,
+                favorites = characterDto.favorites
             )
         }
         characterDao.upsertMangaCrossRefs(characterCrossRefs)
@@ -123,6 +127,7 @@ class MangaRepository @Inject constructor(
         if (cachedManga != null) {
             Log.i("MangaRepository", "Using cached manga with ID: $malId")
             emit(ApiResponse.Success(cachedManga))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }

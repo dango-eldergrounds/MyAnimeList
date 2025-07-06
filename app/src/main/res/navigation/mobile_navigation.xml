@@ -5,6 +5,11 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/nav_top10">
 
+    <!-- GLOBAL ACTION DEFINED HERE -->
+    <action
+        android:id="@+id/action_global_detail"
+        app:destination="@id/nav_detail" />
+
     <fragment
         android:id="@+id/nav_top10"
         android:name="com.example.myanimelist.ui.home.HomeFragment"

@@ -1,6 +1,5 @@
 package com.example.myanimelist.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,13 +55,13 @@ fun CardItemHalfWidth(
     imageSize: Int = 120,
     onItemClick: (Int) -> Unit
 ) {
-    Log.d(
-        "CardItemHalfWidth",
-        "malId: $malId, imageUrl: $imageUrl, title: $title, subtitle: $subtitle"
-    )
+//    Log.d(
+//        "CardItemHalfWidth",
+//        "malId: $malId, imageUrl: $imageUrl, title: $title, subtitle: $subtitle, imageSize: $imageSize"
+//    )
     Card(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxWidth(0.5f)
             .padding(8.dp)
             .clickable { onItemClick(malId) },
         elevation = CardDefaults.cardElevation(4.dp)

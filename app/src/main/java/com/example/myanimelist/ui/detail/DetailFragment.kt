@@ -40,34 +40,42 @@ class DetailFragment : Fragment() {
 
     @Composable
     private fun DetailScreenHandler(type: String?, malId: Int) {
-        var navController = findNavController()
+        val navController = findNavController()
+        when (type) {
+            "anime" -> {
+                val animeViewModel: AnimeViewModel = hiltViewModel()
+                LaunchedEffect(malId) {
+                    Log.d("DetailFragment", "Fetching anime with characters by ID: $malId")
+                    animeViewModel.getAnimeByIdWithCharacters(malId)
+                }
+                AnimeDetailScreen(animeViewModel, navController)
+            }
 
-        val animeViewModel: AnimeViewModel = hiltViewModel()
-        val mangaViewModel: MangaViewModel = hiltViewModel()
-        val characterViewModel: CharacterViewModel = hiltViewModel()
-        val peopleViewModel: PeopleViewModel = hiltViewModel()
+            "manga" -> {
+                val mangaViewModel: MangaViewModel = hiltViewModel()
+                LaunchedEffect(malId) {
+                    Log.d("DetailFragment", "Fetching manga with characters by ID: $malId")
+                    mangaViewModel.getMangaByIdWithCharacters(malId)
+                }
+                MangaDetailScreen(mangaViewModel, navController)
+            }
 
-        if (type == "anime") {
-            LaunchedEffect(malId) {
-                Log.d("DetailFragment", "Fetching anime with ID: $malId")
-                animeViewModel.getAnimeByIdWithCharacters(malId)
+            "character" -> {
+                val characterViewModel: CharacterViewModel = hiltViewModel()
+                LaunchedEffect(malId) {
+                    Log.d("DetailFragment", "Fetching character by ID: $malId")
+                    characterViewModel.getCharacterById(malId, useCached = false)
+                }
+                CharacterDetailScreen(characterViewModel, navController)
             }
-            AnimeDetailScreen(animeViewModel, navController)
-        } else if (type == "manga") {
-            LaunchedEffect(malId) {
-                mangaViewModel.getMangaById(malId)
+
+            "people" -> {
+                val peopleViewModel: PeopleViewModel = hiltViewModel()
+                LaunchedEffect(malId) {
+                    peopleViewModel.getPeopleById(malId)
+                }
+                PeopleDetailScreen(peopleViewModel, navController)
             }
-            MangaDetailScreen(mangaViewModel, navController)
-        } else if (type == "character") {
-            LaunchedEffect(malId) {
-                characterViewModel.getCharacterById(malId)
-            }
-            CharacterDetailScreen(characterViewModel, navController)
-        } else if (type == "people") {
-            LaunchedEffect(malId) {
-                peopleViewModel.getPeopleById(malId)
-            }
-            PeopleDetailScreen(peopleViewModel, navController)
         }
     }
 }

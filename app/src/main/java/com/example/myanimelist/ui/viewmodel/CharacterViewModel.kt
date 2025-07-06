@@ -34,9 +34,9 @@ class CharacterViewModel @Inject constructor(
     val selectedCharacter: StateFlow<ApiResponse<CharacterDto>> = _selectedCharacter
 
     // Function to get Character by ID using offline-first approach
-    fun getCharacterById(malId: Int) {
+    fun getCharacterById(malId: Int, useCached: Boolean = true) {
         viewModelScope.launch {
-            repository.getCharacterById(malId).collectLatest { response ->
+            repository.getCharacterById(malId, useCached).collectLatest { response ->
                 _selectedCharacter.value = response
             }
         }

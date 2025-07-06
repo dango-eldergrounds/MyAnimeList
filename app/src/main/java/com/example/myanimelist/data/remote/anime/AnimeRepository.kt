@@ -44,6 +44,7 @@ class AnimeRepository @Inject constructor(
         val cachedAnime = animeDao.getTopAnime().map { it.toDto() }
         if (cachedAnime.isNotEmpty()) {
             emit(ApiResponse.Success(cachedAnime))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }
@@ -72,23 +73,30 @@ class AnimeRepository @Inject constructor(
             return@flow
         }
 
-        val cachedAnimeWithCharacters = animeDao.getAnimeWithCharacters(malId)
+        val cachedAnimeWithCharacters = animeDao.getCharactersWithRole(malId)
 
-        if (cachedAnimeWithCharacters != null) {
-            val characters = cachedAnimeWithCharacters.characters.map { it.toDto() }
-            if (characters.count() > 0) {
+        if (cachedAnimeWithCharacters.isNotEmpty()) {
+            val sorted = cachedAnimeWithCharacters.sortedByDescending { it.characterFavorites }
+            Log.d(
+                "AnimeRepository",
+                "Using sorted cached characters for anime $malId: ${sorted.count()}"
+            )
+            if (sorted.count() > 0) {
                 val animeWithCharacters = AnimeDtoWithCharacters(
                     anime = cachedAnime,
-                    characters = characters.map {
-                        MediaCharacterDto(character = it, favorites = it.favorites)
-                    }
+                    characters = sorted.map {
+                        MediaCharacterDto(
+                            character = it.character.toDto(),
+                            favorites = it.characterFavorites,
+                        )
+                    },
                 )
                 Log.d(
                     "AnimeRepository",
-                    "Returning  ${characters.count()} cached characters for anime ID: $malId"
+                    "Returning  ${sorted.count()} cached characters for anime ID: $malId"
                 )
                 emit(ApiResponse.Success(animeWithCharacters))
-                return@flow
+//                return@flow
             } else {
                 Log.d("AnimeRepository", "Character count in Room for anime $malId is 0")
             }
@@ -97,10 +105,10 @@ class AnimeRepository @Inject constructor(
         try {
             val charactersResult = apiService.getAnimeCharacters(malId)
             Log.d("AnimeRepository", "Fetching anime characters with ID: $malId")
-            var charactersSorted = charactersResult.data
+            val charactersSorted = charactersResult.data.sortedByDescending { it.favorites }
             val animeWithCharacters = AnimeDtoWithCharacters(
                 anime = cachedAnime,
-                characters = charactersSorted
+                characters = charactersSorted,
             )
             saveCharactersToRoom(cachedAnime.toEntity(), charactersSorted)
             emit(ApiResponse.Success(animeWithCharacters))
@@ -121,12 +129,18 @@ class AnimeRepository @Inject constructor(
         animeEntity: AnimeEntity,
         characters: List<MediaCharacterDto>
     ) {
-        var characterList = characters.map { it.character.toEntity() }
+        val characterList = characters.map { it.character.toEntity() }
         characterDao.upsertAll(characterList)
         val characterCrossRefs = characters.map { characterDto ->
+            Log.d(
+                "AnimeRepository",
+                "Saving character ${characterDto.character.name} favorites: ${characterDto.favorites}"
+            )
             AnimeCharacterCrossRef(
                 animeId = animeEntity.malId,
-                characterId = characterDto.character.malId
+                characterId = characterDto.character.malId,
+                role = characterDto.role,
+                favorites = characterDto.favorites
             )
         }
         characterDao.upsertAnimeCrossRefs(characterCrossRefs)

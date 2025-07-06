@@ -2,6 +2,7 @@ package com.example.myanimelist.data.remote
 
 import com.example.myanimelist.data.remote.anime.AnimeDto
 import com.example.myanimelist.data.remote.character.CharacterDto
+import com.example.myanimelist.data.remote.character.CharacterFullDto
 import com.example.myanimelist.data.remote.character.MediaCharacterDto
 import com.example.myanimelist.data.remote.manga.MangaDto
 import com.example.myanimelist.data.remote.people.PeopleDto
@@ -44,7 +45,7 @@ interface ApiService {
     @GET("manga/{malId}/full")
     suspend fun getMangaById(@Path("malId") malId: Int): MangaDto
 
-    @GET("manga/{malId}/full")
+    @GET("manga/{malId}/characters")
     suspend fun getMangaCharacters(@Path("malId") malId: Int): TopGenericResponse<MediaCharacterDto>
 
     @GET("anime")
@@ -68,7 +69,7 @@ interface ApiService {
     suspend fun getTopCharacters(): TopGenericResponse<CharacterDto>
 
     @GET("characters/{malId}/full")
-    suspend fun getCharacterById(@Path("malId") malId: Int): CharacterDto
+    suspend fun getCharacterById(@Path("malId") malId: Int): CharacterFullDto
 
     @GET("anime")
     suspend fun getCharacterSearch(

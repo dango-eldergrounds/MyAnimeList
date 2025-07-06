@@ -1,6 +1,7 @@
 package com.example.myanimelist.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -60,22 +61,35 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
 
         navController.addOnDestinationChangedListener { _, destination, arguments ->
+            Log.d("MainActivity", "Navigated to ID: ${destination.id}")
             when (destination.id) {
+                R.id.action_global_detail -> {
+                    Log.d("MainActivity", "Global detail action triggered")
+                }
                 R.id.nav_detail -> {
                     val id = arguments?.getInt("malId") ?: 0
                     val type = arguments?.getString("mediaType") ?: "Media"
-                    if (type == "anime") {
-                        animeViewModel.getAnimeById(id)
-                        collectSelectedAnime()
-                    } else if (type == "manga") {
-                        mangaViewModel.getMangaById(id)
-                        collectSelectedManga()
-                    } else if (type == "character") {
-                        characterViewModel.getCharacterById(id)
-                        collectSelectedCharacter()
-                    } else if (type == "people") {
-                        peopleViewModel.getPeopleById(id)
-                        collectSelectedPeople()
+                    Log.d("MainActivity", "Nav detail action triggered - type: $type")
+                    when (type) {
+                        "anime" -> {
+                            animeViewModel.getAnimeById(id)
+                            collectSelectedAnime()
+                        }
+
+                        "manga" -> {
+                            mangaViewModel.getMangaById(id)
+                            collectSelectedManga()
+                        }
+
+                        "character" -> {
+                            characterViewModel.getCharacterById(id, useCached = true)
+                            collectSelectedCharacter()
+                        }
+
+                        "people" -> {
+                            peopleViewModel.getPeopleById(id)
+                            collectSelectedPeople()
+                        }
                     }
                 }
                 R.id.nav_top10 -> supportActionBar?.title = "Top 10"
@@ -87,11 +101,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 characterViewModel.selectedCharacter.collect { response ->
+                    Log.d("MainActivity", "Collecting selected character: $response")
                     when (response) {
                         is ApiResponse.Success -> {
                             supportActionBar?.title = response.data.name
                         }
-
                         is ApiResponse.Error -> {}
                         is ApiResponse.Loading -> {}
                     }

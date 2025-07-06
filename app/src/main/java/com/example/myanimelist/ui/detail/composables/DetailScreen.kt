@@ -18,14 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.myanimelist.data.remote.character.MediaCharacterDto
 import com.example.myanimelist.ui.components.CardItemHalfWidth
+import com.example.myanimelist.ui.home.HomeFragmentDirections
 import com.example.myanimelist.ui.screen.top.ExpandableHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
+    navController: NavController,
     imageUrl: String,
     title: String = "", enTitle: String = "", jpTitle: String = "",
     isTitlesExpanded: Boolean = false, onTitlesExpanded: () -> Unit = { },
@@ -33,7 +36,7 @@ fun DetailScreen(
     isSynopsisExpanded: Boolean = false, onSynopsisExpanded: () -> Unit = { },
     characters: List<MediaCharacterDto> = emptyList(),
     onCharacterClick: (Int) -> Unit = { },
-    isCharactersExpanded: Boolean = false, onCharactersExpanded: () -> Unit = { }
+    isCharactersExpanded: Boolean = false, onCharactersExpanded: () -> Unit = { },
 ) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -143,7 +146,6 @@ fun DetailScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)
                                 .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -160,9 +162,14 @@ fun DetailScreen(
                                         "" // Placeholder image
                                     },
                                     modifier = Modifier.weight(0.5f),
-                                    imageSize = 120,
+                                    imageSize = 180,
                                     subtitle = "Favorites: " + mediaCharacter.favorites,
-                                    onItemClick = { onCharacterClick(character.malId) }
+                                    onItemClick = {
+                                        val action = HomeFragmentDirections.actionGlobalDetail(
+                                            character.malId, "character"
+                                        )
+                                        navController.navigate(action)
+                                    }
                                 )
                             }
                         }

@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.detail.composables
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,10 @@ fun CharacterDetailScreen(
     isAboutExpanded: Boolean = false,
     onAboutExpanded: () -> Unit = {}
 ) {
+    Log.d(
+        "CharacterDetailScreen",
+        "imageUrl: $imageUrl, name: $name, nameKanji: $nameKanji, nicknames: $nicknames, about: $about, favorites: $favorites"
+    )
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -123,8 +128,13 @@ fun CharacterDetailScreen(
 
         is ApiResponse.Success -> {
             val character = (selectedCharacter as ApiResponse.Success<CharacterDto>).data
+            Log.d("CharacterDetailScreen", "Character: ${character.name} ID: (${character.malId})")
+            var imageUrl = ""
+            if (character.images != null && character.images.jpg != null) {
+                imageUrl = character.images.jpg.imageUrl ?: ""
+            }
             CharacterDetailScreen(
-                imageUrl = character.images.jpg.imageUrl,
+                imageUrl = imageUrl,
                 name = character.name ?: "",
                 nameKanji = character.nameKanji ?: "",
                 nicknames = character.nicknames ?: emptyList(),

@@ -47,6 +47,7 @@ fun AnimeDetailScreen(
                 "Anime loaded: ${anime.title} Characters: ${animeWithCharacters.characters.count()}"
             )
             DetailScreen(
+                navController,
                 imageUrl = anime.images.jpg.largeImageUrl,
                 title = anime.title,
                 enTitle = anime.titleEnglish ?: "", jpTitle = anime.titleJapanese ?: "",

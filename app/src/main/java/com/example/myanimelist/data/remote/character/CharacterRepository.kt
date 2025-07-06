@@ -1,5 +1,6 @@
 package com.example.myanimelist.data.remote.character
 
+import android.util.Log
 import com.example.myanimelist.data.local.character.CharacterDao
 import com.example.myanimelist.data.local.character.toDto
 import com.example.myanimelist.data.remote.ApiResponse
@@ -14,9 +15,10 @@ class CharacterRepository @Inject constructor(
 ) {
     // TODO: By default it gets Top 10 but we can change it later
     fun getTopCharacter(): Flow<ApiResponse<List<CharacterDto>>> = flow {
-        var cachedCharacters = characterDao.getTopCharacter().map { it.toDto() }
+        val cachedCharacters = characterDao.getTopCharacter().map { it.toDto() }
         if (cachedCharacters.isNotEmpty()) {
             emit(ApiResponse.Success(cachedCharacters))
+            return@flow
         } else {
             emit(ApiResponse.Loading)
         }
@@ -33,19 +35,27 @@ class CharacterRepository @Inject constructor(
         }
     }
 
-    fun getCharacterById(malId: Int): Flow<ApiResponse<CharacterDto>> = flow {
+    fun getCharacterById(malId: Int, useCached: Boolean = true)
+            : Flow<ApiResponse<CharacterDto>> = flow {
+
         val cachedCharacter = characterDao.getCharacterById(malId)?.toDto()
         if (cachedCharacter != null) {
+            Log.d("CharacterRepository", "Using cached character: ${cachedCharacter.name}")
             emit(ApiResponse.Success(cachedCharacter))
+            if (useCached) return@flow
         } else {
             emit(ApiResponse.Loading)
         }
 
         try {
+            Log.d("CharacterRepository", "Fetching FULL character by ID: $malId")
             val result = apiService.getCharacterById(malId)
-            characterDao.upsertAll(listOf(result.toEntity()))
-            emit(ApiResponse.Success(result))
+            val character = result.character
+            Log.d("CharacterRepository", "Fetched character $malId: $character.name")
+            characterDao.upsertAll(listOf(character.toEntity()))
+            emit(ApiResponse.Success(character))
         } catch (e: Exception) {
+            Log.e("CharacterRepository", "Error fetching character by ID: $malId", e)
             if (cachedCharacter == null) {
                 emit(ApiResponse.Error(e.message ?: "Unknown error"))
             }

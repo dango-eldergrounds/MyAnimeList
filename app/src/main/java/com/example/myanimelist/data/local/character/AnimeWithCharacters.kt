@@ -1,22 +1,19 @@
 package com.example.myanimelist.data.local.character
 
+import androidx.room.ColumnInfo
+import androidx.room.DatabaseView
 import androidx.room.Embedded
-import androidx.room.Junction
-import androidx.room.Relation
-import com.example.myanimelist.data.local.anime.AnimeEntity
 
-data class AnimeWithCharacters(
-    @Embedded val anime: AnimeEntity,
-
-    @Relation(
-        parentColumn = "malId",
-        entityColumn = "malId",
-        associateBy = Junction(
-            AnimeCharacterCrossRef::class,
-            parentColumn = "animeId",
-            entityColumn = "characterId"
-        )
-    )
-    val characters: List<CharacterEntity>
+@DatabaseView(
+    value = """
+        SELECT c.*, ac.animeId, ac.role, ac.favorites AS characterFavorites
+        FROM character c
+        INNER JOIN AnimeCharacterCrossRef ac ON c.malId = ac.characterId
+    """,
+    viewName = "character_with_role"
 )
-
+data class CharacterWithRole(
+    @Embedded val character: CharacterEntity,
+    val role: String,
+    @ColumnInfo(name = "characterFavorites") val characterFavorites: Int
+)

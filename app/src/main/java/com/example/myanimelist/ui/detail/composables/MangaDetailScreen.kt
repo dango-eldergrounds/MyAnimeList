@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myanimelist.data.remote.ApiResponse
-import com.example.myanimelist.data.remote.manga.MangaDto
+import com.example.myanimelist.data.remote.manga.MangaDtoWithCharacters
 import com.example.myanimelist.ui.viewmodel.MangaViewModel
 
 @Composable
@@ -26,7 +26,7 @@ fun MangaDetailScreen(
     var isTitlesExpanded by remember { mutableStateOf(true) }
     var isCharactersExpanded by remember { mutableStateOf(true) }
 
-    val selectedManga by mangaViewModel.selectedManga.collectAsState()
+    val selectedManga by mangaViewModel.selectedMangaWithCharacters.collectAsState()
     when (selectedManga) {
         is ApiResponse.Loading -> {
             CircularProgressIndicator(
@@ -37,8 +37,11 @@ fun MangaDetailScreen(
         }
 
         is ApiResponse.Success -> {
-            val manga = (selectedManga as ApiResponse.Success<MangaDto>).data
+            val mangaWithCharacters = (selectedManga as ApiResponse
+            .Success<MangaDtoWithCharacters>).data
+            val manga = mangaWithCharacters.manga
             DetailScreen(
+                navController,
                 imageUrl = manga.images.jpg.largeImageUrl,
                 title = manga.title,
                 enTitle = manga.titleEnglish, jpTitle = manga.titleJapanese,
@@ -50,9 +53,13 @@ fun MangaDetailScreen(
                 isSynopsisExpanded = isSynopsisExpanded,
                 onSynopsisExpanded = {
                     isSynopsisExpanded = !isSynopsisExpanded
+                },
+                characters = mangaWithCharacters.characters,
+                isCharactersExpanded = isCharactersExpanded,
+                onCharactersExpanded = {
+                    isCharactersExpanded = !isCharactersExpanded
                 }
             )
-
         }
 
         is ApiResponse.Error -> {

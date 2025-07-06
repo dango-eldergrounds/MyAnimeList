@@ -1,6 +1,8 @@
 package com.example.myanimelist.data.local.character
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -20,7 +22,7 @@ interface CharacterDao {
     suspend fun getCharacterById(malId: Int): CharacterEntity?
 
     @Transaction
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAnimeCrossRefs(crossRefs: List<AnimeCharacterCrossRef>)
 
     @Transaction
