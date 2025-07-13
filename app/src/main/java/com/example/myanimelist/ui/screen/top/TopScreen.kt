@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,22 +16,28 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.anime.AnimeDto
 import com.example.myanimelist.data.remote.character.CharacterDto
@@ -38,13 +45,16 @@ import com.example.myanimelist.data.remote.manga.MangaDto
 import com.example.myanimelist.data.remote.people.PeopleDto
 import com.example.myanimelist.ui.components.TopMediaItem
 import com.example.myanimelist.ui.components.TopPersonItem
+import com.example.myanimelist.ui.home.HomeFragmentDirections
 import com.example.myanimelist.ui.viewmodel.AnimeViewModel
 import com.example.myanimelist.ui.viewmodel.CharacterViewModel
 import com.example.myanimelist.ui.viewmodel.MangaViewModel
 import com.example.myanimelist.ui.viewmodel.PeopleViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopScreen(
+    navController: NavController,
     animeViewModel: AnimeViewModel, onAnimeClick: (Int) -> Unit = {},
     mangaViewModel: MangaViewModel, onMangaClick: (Int) -> Unit = {},
     characterViewModel: CharacterViewModel, onCharacterClick: (Int) -> Unit = {},
@@ -61,80 +71,116 @@ fun TopScreen(
     var characterExpanded by rememberSaveable { mutableStateOf(true) }
     var peopleExpanded by rememberSaveable { mutableStateOf(true) }
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        // Anime Section
-        if (topAnimeState is ApiResponse.Loading) {
-            loadingIndicator()
-        }
-        if (topAnimeState is ApiResponse.Success) {
-            top10AnimePart(animeExpanded, topAnimeState, onAnimeClick,
-                onToggleExpanded = { animeExpanded = !animeExpanded })
-        } else if (topAnimeState is ApiResponse.Error) {
-            item {
-                Text(
-                    text = "Error loading top anime: ${(topAnimeState as ApiResponse.Error).message}",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
+    var searchText by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+    var showSuggestions by remember { mutableStateOf(true) }
+
+    Column(modifier = Modifier.fillMaxSize())
+    {
+        SearchBar(
+            query = searchText,
+            onQueryChange = {
+                searchText = it
+                showSuggestions = it.isNotBlank()
+            },
+            onSearch = { query ->
+                showSuggestions = false
+                val action = HomeFragmentDirections.actionGlobalNavSearch(query)
+                navController.navigate(action)
+            },
+            active = false,
+            onActiveChange = { /* DO NOTHING */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+            placeholder = { Text("Search anime or manga...") },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search"
                 )
             }
+        ) {
         }
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+            // Anime Section
+            if (topAnimeState is ApiResponse.Loading) {
+                loadingIndicator()
+            }
+            if (topAnimeState is ApiResponse.Success) {
+                top10AnimePart(
+                    animeExpanded, topAnimeState, onAnimeClick,
+                    onToggleExpanded = { animeExpanded = !animeExpanded })
+            } else if (topAnimeState is ApiResponse.Error) {
+                item {
+                    Text(
+                        text = "Error loading top anime: ${(topAnimeState as ApiResponse.Error).message}",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
 
 //       return@LazyColumn // ! Return early to avoid unnecessary processing
 
-        // Manga Section
-        if (topMangaState is ApiResponse.Loading) {
-            loadingIndicator()
-        }
-        if (topMangaState is ApiResponse.Success) {
-            top10MangaPart(mangaExpanded, topMangaState, onMangaClick,
-                onToggleExpanded = { mangaExpanded = !mangaExpanded })
-        } else if (topMangaState is ApiResponse.Error) {
-            item {
-                Text(
-                    text = "Error loading top manga: ${(topMangaState as ApiResponse.Error).message}",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
-                )
+            // Manga Section
+            if (topMangaState is ApiResponse.Loading) {
+                loadingIndicator()
             }
-        }
-
-        // Character Section
-        if (topCharacterState is ApiResponse.Loading) {
-            loadingIndicator()
-        }
-        if (topCharacterState is ApiResponse.Success) {
-            top10CharactersPart(
-                characterExpanded, topCharacterState, onCharacterClick,
-                onToggleExpanded = { characterExpanded = !characterExpanded })
-        } else if (topCharacterState is ApiResponse.Error) {
-            item {
-                Text(
-                    text = "Error loading top characters: ${(topCharacterState as ApiResponse.Error).message}",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
-                )
+            if (topMangaState is ApiResponse.Success) {
+                top10MangaPart(
+                    mangaExpanded, topMangaState, onMangaClick,
+                    onToggleExpanded = { mangaExpanded = !mangaExpanded })
+            } else if (topMangaState is ApiResponse.Error) {
+                item {
+                    Text(
+                        text = "Error loading top manga: ${(topMangaState as ApiResponse.Error).message}",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
-        }
 
-        // People section
-        if (topPeopleState is ApiResponse.Loading) {
-            loadingIndicator()
-        }
-        if (topPeopleState is ApiResponse.Success) {
-            top10PeoplePart(
-                peopleExpanded, topPeopleState, onPeopleClick,
-                onToggleExpanded = { peopleExpanded = !peopleExpanded })
-        } else if (topPeopleState is ApiResponse.Error) {
-            item {
-                Text(
-                    text = "Error loading top people: ${(topPeopleState as ApiResponse.Error).message}",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
-                )
+            // Character Section
+            if (topCharacterState is ApiResponse.Loading) {
+                loadingIndicator()
+            }
+            if (topCharacterState is ApiResponse.Success) {
+                top10CharactersPart(
+                    characterExpanded, topCharacterState, onCharacterClick,
+                    onToggleExpanded = { characterExpanded = !characterExpanded })
+            } else if (topCharacterState is ApiResponse.Error) {
+                item {
+                    Text(
+                        text = "Error loading top characters: ${(topCharacterState as ApiResponse.Error).message}",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            // People section
+            if (topPeopleState is ApiResponse.Loading) {
+                loadingIndicator()
+            }
+            if (topPeopleState is ApiResponse.Success) {
+                top10PeoplePart(
+                    peopleExpanded, topPeopleState, onPeopleClick,
+                    onToggleExpanded = { peopleExpanded = !peopleExpanded })
+            } else if (topPeopleState is ApiResponse.Error) {
+                item {
+                    Text(
+                        text = "Error loading top people: ${(topPeopleState as ApiResponse.Error).message}",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
@@ -142,11 +188,16 @@ fun TopScreen(
 
 fun LazyListScope.loadingIndicator() {
     item {
-        CircularProgressIndicator(
+        Box(
             modifier = Modifier
-                .padding(16.dp)
-                .size(40.dp)
-        )
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(40.dp)
+            )
+        }
     }
 }
 
@@ -296,7 +347,7 @@ fun ExpandableHeader(
     title: String,
     isExpanded: Boolean,
     color: Color = MaterialTheme.colorScheme.background,
-    style: TextStyle = MaterialTheme.typography.headlineMedium,
+    style: TextStyle = MaterialTheme.typography.headlineSmall,
     onToggleExpanded: () -> Unit,
     modifier: Modifier = Modifier
 ) {

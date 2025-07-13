@@ -56,4 +56,16 @@ class AnimeViewModel @Inject constructor(
             }
         }
     }
+
+    private val _searchResults = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
+    val searchResults: StateFlow<ApiResponse<List<AnimeDto>>> = _searchResults
+
+    fun searchAnime(query: String) {
+        viewModelScope.launch {
+            repository.searchAnime(query).collectLatest { response ->
+                _searchResults.value = response
+                Log.d("Search", "Search anime results for query '$query': $response")
+            }
+        }
+    }
 }

@@ -239,4 +239,41 @@ class AnimeRepository @Inject constructor(
         }
         genreDao.upsertAnimeCrossRef(animeCrossRefs)
     }
+
+    fun searchAnime(
+        query: String,
+        type: String? = null,
+        rating: String? = null,
+        genres: String? = null,
+        genresExclude: String? = null,
+        orderBy: String? = null,
+        sort: String? = null,
+        status: String? = null,
+        sfw: Boolean? = true,
+        startsWith: String? = null,
+        limit: Int? = 10,
+        page: Int? = null
+    ): Flow<ApiResponse<List<AnimeDto>>> = flow {
+        emit(ApiResponse.Loading)
+
+        try {
+            val response = apiService.getAnimeSearch(
+                query = query,
+                type = type,
+                rating = rating,
+                genres = genres,
+                genresExclude = genresExclude,
+                orderBy = orderBy,
+                sort = sort,
+                status = status,
+                sfw = sfw,
+                startsWith = startsWith,
+                limit = limit,
+                page = page
+            )
+            emit(ApiResponse.Success(response.data))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+        }
+    }
 }

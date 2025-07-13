@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myanimelist.data.remote.ApiResponse
@@ -50,6 +51,18 @@ class MangaViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getMangaWithCharactersById(malId).collectLatest { response ->
                 _selectedMangaWithCharacters.value = response
+            }
+        }
+    }
+
+    private val _searchResults = MutableStateFlow<ApiResponse<List<MangaDto>>>(ApiResponse.Loading)
+    val searchResults: StateFlow<ApiResponse<List<MangaDto>>> = _searchResults
+
+    fun searchManga(query: String) {
+        viewModelScope.launch {
+            repository.searchManga(query).collectLatest { response ->
+                _searchResults.value = response
+                Log.d("Search", "Search manga results for query '$query': $response")
             }
         }
     }

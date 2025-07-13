@@ -229,4 +229,42 @@ class MangaRepository @Inject constructor(
             Log.i(tag, "Serializations: ${manga.serializations.joinToString(", ") { it.name }}")
         }
     }
+
+    fun searchManga(
+        query: String,
+        type: String? = null,
+        rating: String? = null,
+        genres: String? = null,
+        genresExclude: String? = null,
+        orderBy: String? = null,
+        sort: String? = null,
+        status: String? = null,
+        sfw: Boolean? = true,
+        startsWith: String? = null,
+        limit: Int? = 10,
+        page: Int? = null
+    ): Flow<ApiResponse<List<MangaDto>>> = flow {
+        emit(ApiResponse.Loading)
+
+        try {
+            val response = apiService.getMangaSearch(
+                query = query,
+                type = type,
+                rating = rating,
+                genres = genres,
+                genresExclude = genresExclude,
+                orderBy = orderBy,
+                sort = sort,
+                status = status,
+                sfw = sfw,
+                startsWith = startsWith,
+                limit = limit,
+                page = page
+            )
+
+            emit(ApiResponse.Success(response.data))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+        }
+    }
 }

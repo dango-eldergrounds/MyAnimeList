@@ -42,6 +42,7 @@ class HomeFragment : Fragment() {
                     }
                     
                     TopScreen(
+                        navController,
                         animeViewModel = animeViewModel,
                         onAnimeClick = { malId ->
                             val action = HomeFragmentDirections

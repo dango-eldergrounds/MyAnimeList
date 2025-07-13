@@ -10,6 +10,19 @@
         android:id="@+id/action_global_detail"
         app:destination="@id/nav_detail" />
 
+    <action
+        android:id="@+id/action_global_nav_search"
+        app:destination="@id/nav_search" />
+    
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="com.example.myanimelist.ui.search.SearchFragment"
+        android:label="Search Results">
+        <argument
+            android:name="query"
+            app:argType="string" />
+    </fragment>
+
     <fragment
         android:id="@+id/nav_top10"
         android:name="com.example.myanimelist.ui.home.HomeFragment"

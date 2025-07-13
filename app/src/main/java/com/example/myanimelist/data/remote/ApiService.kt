@@ -48,7 +48,7 @@ interface ApiService {
     @GET("manga/{malId}/characters")
     suspend fun getMangaCharacters(@Path("malId") malId: Int): TopGenericResponse<MediaCharacterDto>
 
-    @GET("anime")
+    @GET("manga")
     suspend fun getMangaSearch(
         @Query("q") query: String? = null,
         @Query("type") type: String? = null,
@@ -62,7 +62,7 @@ interface ApiService {
         @Query("letter") startsWith: String? = null,
         @Query("limit") limit: Int? = 10,
         @Query("page") page: Int? = null
-    ): TopGenericResponse<AnimeDto>
+    ): TopGenericResponse<MangaDto>
 
     // CHARACTERS
     @GET("top/characters")

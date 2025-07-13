@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,11 +19,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
 @Composable
-fun TopCardItem(
+fun CardItem(
     malId: Int, imageUrl: String?, title: String, subtitle: String,
     modifier: Modifier = Modifier, imageSize: Int = 120,
     onItemClick: (Int) -> Unit
 ) {
+    Log.i("Card", "Title: $title Subtitle: $subtitle")
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -93,7 +95,7 @@ fun TopPersonItem(
     imageSize: Int = 120,
     onItemClick: (Int) -> Unit
 ) {
-    TopCardItem(
+    CardItem(
         malId = malId,
         imageUrl = imageUrl,
         title = "#$rank. $name",
@@ -110,7 +112,7 @@ fun TopMediaItem(
     modifier: Modifier = Modifier,
     onItemClick: (Int) -> Unit
 ) {
-    TopCardItem(
+    CardItem(
         malId = malId,
         imageUrl = imageUrl,
         title = "#$rank. $title",
