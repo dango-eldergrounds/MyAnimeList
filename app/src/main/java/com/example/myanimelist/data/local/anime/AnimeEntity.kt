@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 @Entity(tableName = "anime")
 data class AnimeEntity(
     @PrimaryKey @SerializedName("mal_id") val malId: Int,
-    val url: String,
+    val url: String?,
     val title: String,
     val titleEnglish: String?,
     val titleJapanese: String?,

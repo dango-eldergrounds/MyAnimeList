@@ -1,5 +1,6 @@
 package com.example.myanimelist.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myanimelist.data.remote.ApiResponse
@@ -38,6 +39,30 @@ class CharacterViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getCharacterById(malId, useCached).collectLatest { response ->
                 _selectedCharacter.value = response
+            }
+        }
+    }
+
+    private val _searchResults =
+        MutableStateFlow<ApiResponse<List<CharacterDto>>>(ApiResponse.Loading)
+    val searchResults: StateFlow<ApiResponse<List<CharacterDto>>> = _searchResults
+    private var lastQuery: String? = null
+
+    suspend fun searchCharacter(query: String, type: String = "All") {
+        if (type != "All" && type != "Character") {
+            Log.w("CharacterViewModel", "Type filtering not implemented for Character search")
+            return
+        }
+
+        if (lastQuery == query && _searchResults.value is ApiResponse.Success) {
+            return
+        }
+        lastQuery = query
+
+        viewModelScope.launch {
+            repository.searchCharacter(query).collect { response ->
+                _searchResults.value = response
+                Log.d("Search", "Search character results for query '$query': $response")
             }
         }
     }

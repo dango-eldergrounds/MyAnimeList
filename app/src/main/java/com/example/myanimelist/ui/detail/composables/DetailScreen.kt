@@ -30,7 +30,7 @@ import com.example.myanimelist.ui.screen.top.ExpandableHeader
 fun DetailScreen(
     navController: NavController,
     imageUrl: String,
-    title: String = "", enTitle: String = "", jpTitle: String = "",
+    title: String = "", enTitle: String? = "", jpTitle: String = "",
     isTitlesExpanded: Boolean = false, onTitlesExpanded: () -> Unit = { },
     synopsis: String = "",
     isSynopsisExpanded: Boolean = false, onSynopsisExpanded: () -> Unit = { },
@@ -110,7 +110,7 @@ fun DetailScreen(
                                 .align(Alignment.CenterHorizontally)
                         )
                     }
-                    if (!enTitle.isEmpty()) {
+                    if (!enTitle.isNullOrEmpty()) {
                         Text(
                             text = enTitle,
                             textAlign = TextAlign.Center,

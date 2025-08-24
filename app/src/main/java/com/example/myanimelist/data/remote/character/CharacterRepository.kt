@@ -62,4 +62,27 @@ class CharacterRepository @Inject constructor(
         }
     }
 
+    fun searchCharacter(
+        query: String,
+        orderBy: String? = "favorites",
+        sort: String? = null,
+        startsWith: String? = null,
+        limit: Int? = 10,
+        page: Int? = null
+    ): Flow<ApiResponse<List<CharacterDto>>> = flow {
+        emit(ApiResponse.Loading)
+        try {
+            val response = apiService.getCharacterSearch(
+                query = query,
+                orderBy = orderBy,
+                sort = sort,
+                startsWith = startsWith,
+                limit = limit,
+                page = page
+            )
+            emit(ApiResponse.Success(response.data))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+        }
+    }
 }

@@ -51,7 +51,6 @@ class AnimeViewModel @Inject constructor(
     fun getAnimeById(malId: Int) {
         viewModelScope.launch {
             repository.getAnimeById(malId).collectLatest { response ->
-                Log.d("AnimeViewModel", "Fetching anime with ID: $malId")
                 _selectedAnime.value = response
             }
         }
@@ -59,10 +58,21 @@ class AnimeViewModel @Inject constructor(
 
     private val _searchResults = MutableStateFlow<ApiResponse<List<AnimeDto>>>(ApiResponse.Loading)
     val searchResults: StateFlow<ApiResponse<List<AnimeDto>>> = _searchResults
+    private var lastQuery: String? = null
 
-    fun searchAnime(query: String) {
+    suspend fun searchAnime(query: String, type: String = "All") {
+
+        if (type != "All" && type != "Anime")
+            return
+
+        if (lastQuery == query && _searchResults.value is ApiResponse.Success) {
+            // already have results, don’t fetch again
+            return
+        }
+        lastQuery = query
+
         viewModelScope.launch {
-            repository.searchAnime(query).collectLatest { response ->
+            repository.searchAnime(query).collect { response ->
                 _searchResults.value = response
                 Log.d("Search", "Search anime results for query '$query': $response")
             }

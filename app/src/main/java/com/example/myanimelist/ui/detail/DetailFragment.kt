@@ -29,6 +29,7 @@ class DetailFragment : Fragment() {
     ): View {
         val malId = requireArguments().getInt("malId")
         val type = requireArguments().getString("mediaType") // "anime" or "manga"
+        Log.i("DetailFragment", "malId: $malId, type: $type")
         return ComposeView(requireContext()).apply {
             setContent {
                 MyAnimeListTheme {

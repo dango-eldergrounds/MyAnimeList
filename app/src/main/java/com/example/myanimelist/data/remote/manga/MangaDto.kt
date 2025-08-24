@@ -17,6 +17,10 @@ data class MangaDtoWithCharacters(
     val characters: List<MediaCharacterDto>
 )
 
+data class MangaResponse(
+    val data: MangaDto
+)
+
 data class MangaDto(
     @SerializedName("mal_id") val malId: Int,
     val url: String,

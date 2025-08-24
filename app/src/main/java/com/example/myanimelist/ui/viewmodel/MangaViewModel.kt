@@ -57,10 +57,21 @@ class MangaViewModel @Inject constructor(
 
     private val _searchResults = MutableStateFlow<ApiResponse<List<MangaDto>>>(ApiResponse.Loading)
     val searchResults: StateFlow<ApiResponse<List<MangaDto>>> = _searchResults
+    private var lastQuery: String? = null
 
-    fun searchManga(query: String) {
+    suspend fun searchManga(query: String, type: String = "All") {
+        if (type != "All" && type != "Manga") {
+            Log.w("MangaViewModel", "Type filtering not implemented for manga search")
+            return
+        }
+
+        if (lastQuery == query && _searchResults.value is ApiResponse.Success) {
+            return
+        }
+        lastQuery = query
+
         viewModelScope.launch {
-            repository.searchManga(query).collectLatest { response ->
+            repository.searchManga(query).collect { response ->
                 _searchResults.value = response
                 Log.d("Search", "Search manga results for query '$query': $response")
             }

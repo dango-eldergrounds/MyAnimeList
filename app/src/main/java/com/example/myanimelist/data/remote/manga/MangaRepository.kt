@@ -62,21 +62,33 @@ class MangaRepository @Inject constructor(
     fun getMangaWithCharactersById(malId: Int):
             Flow<ApiResponse<MangaDtoWithCharacters>> = flow {
 
-        Log.d("AnimeRepository", "Fetching manga+characters with ID: $malId")
+        Log.d("getMangaWithCharactersById", "Fetching manga+characters with ID: $malId")
         emit(ApiResponse.Loading)
 
         val cachedManga = mangaDao.getMangaById(malId)?.toDto()
-        if (cachedManga == null) {
-            emit(ApiResponse.Error("Could not get cached manga with ID $malId from Room"))
-            return@flow
-        }
+        val manga = cachedManga
+            ?: try {
+                Log.d("getMangaWithCharactersById", "Fetching Manga $malId from API first")
+                val remoteManga = apiService.getMangaByIdFull(malId).data
+                Log.d("getMangaWithCharactersById", "Saving Manga ${remoteManga.title} to Room")
+                saveResultToRoom(listOf(remoteManga))
+                remoteManga
+            } catch (e: Exception) {
+                Log.e(
+                    "getMangaWithCharactersById",
+                    "Error fetching anime with ID $malId: ${e.message}"
+                )
+                emit(ApiResponse.Error("Could not fetch anime with ID $malId: ${e.message}"))
+                return@flow
+            }
 
         val cachedMangaWithCharacters = mangaDao.getMangaWithCharacters(malId)
+
         if (cachedMangaWithCharacters != null) {
             val characters = cachedMangaWithCharacters.characters.map { it.toDto() }
             if (characters.count() > 0) {
                 val mangaWithCharacters = MangaDtoWithCharacters(
-                    manga = cachedManga,
+                    manga = manga,
                     characters = characters.map {
                         MediaCharacterDto(character = it, favorites = it.favorites)
                     }
@@ -94,12 +106,12 @@ class MangaRepository @Inject constructor(
 
         val charactersResult = apiService.getMangaCharacters(malId)
         Log.d("MangaRepository", "Fetching manga characters with ID: $malId")
-        var charactersSorted = charactersResult.data.sortedByDescending { it.favorites }
+        val charactersSorted = charactersResult.data.sortedByDescending { it.favorites }
         val mangaWithCharacters = MangaDtoWithCharacters(
-            manga = cachedManga,
+            manga = manga,
             characters = charactersSorted
         )
-        saveCharactersToRoom(cachedManga.toEntity(), charactersSorted)
+        saveCharactersToRoom(manga.toEntity(), charactersSorted)
         emit(ApiResponse.Success(mangaWithCharacters))
     }
 
@@ -107,7 +119,7 @@ class MangaRepository @Inject constructor(
         mangaEntity: MangaEntity,
         characters: List<MediaCharacterDto>
     ) {
-        var characterList = characters.map { it.character.toEntity() }
+        val characterList = characters.map { it.character.toEntity() }
         characterDao.upsertAll(characterList)
         val characterCrossRefs = characters.map { characterDto ->
             MangaCharacterCrossRef(

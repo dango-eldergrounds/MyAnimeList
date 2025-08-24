@@ -1,10 +1,12 @@
 package com.example.myanimelist.data.remote
 
 import com.example.myanimelist.data.remote.anime.AnimeDto
+import com.example.myanimelist.data.remote.anime.AnimeResponse
 import com.example.myanimelist.data.remote.character.CharacterDto
 import com.example.myanimelist.data.remote.character.CharacterFullDto
 import com.example.myanimelist.data.remote.character.MediaCharacterDto
 import com.example.myanimelist.data.remote.manga.MangaDto
+import com.example.myanimelist.data.remote.manga.MangaResponse
 import com.example.myanimelist.data.remote.people.PeopleDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -18,6 +20,9 @@ interface ApiService {
 
     @GET("anime/{malId}/full")
     suspend fun getAnimeById(@Path("malId") malId: Int): AnimeDto
+
+    @GET("anime/{malId}/full")
+    suspend fun getAnimeByIdFull(@Path("malId") malId: Int): AnimeResponse
 
     @GET("anime/{malId}/characters")
     suspend fun getAnimeCharacters(@Path("malId") malId: Int): TopGenericResponse<MediaCharacterDto>
@@ -45,6 +50,10 @@ interface ApiService {
     @GET("manga/{malId}/full")
     suspend fun getMangaById(@Path("malId") malId: Int): MangaDto
 
+
+    @GET("manga/{malId}/full")
+    suspend fun getMangaByIdFull(@Path("malId") malId: Int): MangaResponse
+
     @GET("manga/{malId}/characters")
     suspend fun getMangaCharacters(@Path("malId") malId: Int): TopGenericResponse<MediaCharacterDto>
 
@@ -71,15 +80,15 @@ interface ApiService {
     @GET("characters/{malId}/full")
     suspend fun getCharacterById(@Path("malId") malId: Int): CharacterFullDto
 
-    @GET("anime")
+    @GET("characters")
     suspend fun getCharacterSearch(
         @Query("q") query: String? = null,
-        @Query("order_by") orderBy: String? = null,
+        @Query("order_by") orderBy: String? = "favorites",
         @Query("sort") sort: String? = null,
         @Query("letter") startsWith: String? = null,
         @Query("limit") limit: Int? = 10,
         @Query("page") page: Int? = null
-    ): TopGenericResponse<AnimeDto>
+    ): TopGenericResponse<CharacterDto>
 
     // PEOPLE
     @GET("top/people")
@@ -87,5 +96,15 @@ interface ApiService {
 
     @GET("people/{malId}/full")
     suspend fun getPeopleById(@Path("malId") malId: Int): PeopleDto
+
+    @GET("people")
+    suspend fun getPeopleSearch(
+        @Query("q") query: String? = null,
+        @Query("order_by") orderBy: String? = "name",
+        @Query("sort") sort: String? = "desc",
+        @Query("letter") startsWith: String? = null,
+        @Query("limit") limit: Int? = 10,
+        @Query("page") page: Int? = null
+    ): TopGenericResponse<PeopleDto>
 }
 

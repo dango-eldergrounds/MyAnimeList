@@ -1,14 +1,13 @@
 package com.example.myanimelist.ui.detail.composables
 
 import android.util.Log
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +31,7 @@ import com.example.myanimelist.data.remote.ApiResponse
 import com.example.myanimelist.data.remote.character.CharacterDto
 import com.example.myanimelist.ui.screen.top.ExpandableHeader
 import com.example.myanimelist.ui.viewmodel.CharacterViewModel
+import com.example.myanimelist.utils.toggleLoading
 
 @Composable
 fun CharacterDetailScreen(
@@ -119,14 +119,12 @@ fun CharacterDetailScreen(
     val selectedCharacter by characterViewModel.selectedCharacter.collectAsState()
     when (selectedCharacter) {
         is ApiResponse.Loading -> {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .size(40.dp)
-            )
+            LocalActivity.current?.toggleLoading(true)
         }
 
         is ApiResponse.Success -> {
+            LocalActivity.current?.toggleLoading(false)
+
             val character = (selectedCharacter as ApiResponse.Success<CharacterDto>).data
             Log.d("CharacterDetailScreen", "Character: ${character.name} ID: (${character.malId})")
             var imageUrl = ""
@@ -148,6 +146,7 @@ fun CharacterDetailScreen(
         }
 
         is ApiResponse.Error -> {
+            LocalActivity.current?.toggleLoading(false)
             Text(text = "Error loading Character details")
         }
     }

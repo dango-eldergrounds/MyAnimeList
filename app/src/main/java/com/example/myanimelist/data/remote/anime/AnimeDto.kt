@@ -19,10 +19,14 @@ data class AnimeDtoWithCharacters(
     val characters: List<MediaCharacterDto>
 )
 
+data class AnimeResponse(
+    val data: AnimeDto
+)
+
 data class AnimeDto (
     // Common with Manga
     @SerializedName("mal_id") val malId: Int,
-    val url: String,
+    val url: String?,
     val images: ImagesDto,
     val title: String,
     @SerializedName("title_english") val titleEnglish: String?,

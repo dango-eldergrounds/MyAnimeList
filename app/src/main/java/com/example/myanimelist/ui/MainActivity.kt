@@ -3,6 +3,7 @@ package com.example.myanimelist.ui
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -35,6 +36,11 @@ class MainActivity : AppCompatActivity() {
     private val mangaViewModel: MangaViewModel by viewModels()
     private val characterViewModel: CharacterViewModel by viewModels()
     private val peopleViewModel: PeopleViewModel by viewModels()
+
+    fun toggleLoadingOverlay(show: Boolean) {
+        val progressBar = binding.appBarMain.root.findViewById<ProgressBar>(R.id.progressBar)
+        progressBar.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

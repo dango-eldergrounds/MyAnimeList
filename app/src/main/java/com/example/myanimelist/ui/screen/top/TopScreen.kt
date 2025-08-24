@@ -1,27 +1,32 @@
 package com.example.myanimelist.ui.screen.top
 
+import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DockedSearchBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,10 +55,97 @@ import com.example.myanimelist.ui.viewmodel.AnimeViewModel
 import com.example.myanimelist.ui.viewmodel.CharacterViewModel
 import com.example.myanimelist.ui.viewmodel.MangaViewModel
 import com.example.myanimelist.ui.viewmodel.PeopleViewModel
+import com.example.myanimelist.utils.toggleLoading
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBarWithDropdown(navController: NavController) {
+    var searchText by remember { mutableStateOf("") }
+    var showSuggestions by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+    var selectedOption by remember { mutableStateOf("All") }
+
+    val options = listOf("All", "Anime", "Manga", "Character", "People")
+
+    val barHeight = 64.dp // standard text field height
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Dropdown
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = selectedOption,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Type") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .width(150.dp) // adjust width if needed
+                    .height(barHeight)  // 🔑 same height as SearchBar
+                    .padding(end = 8.dp)
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            selectedOption = option
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        // SearchBar takes most of the space
+        DockedSearchBar(
+            query = searchText,
+            onQueryChange = {
+                searchText = it
+                showSuggestions = it.isNotBlank()
+            },
+            onSearch = { query ->
+                showSuggestions = false
+                val action = HomeFragmentDirections.actionGlobalNavSearch(
+                    query,
+                    selectedOption
+                )
+                navController.navigate(action)
+            },
+            active = false,
+            onActiveChange = { /* DO NOTHING */ },
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .weight(1f) // fill remaining space
+                .height(barHeight),   // 🔑 match dropdown height
+            placeholder = { Text("Search...") },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search"
+                )
+            }
+        ) {}
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopScreen(
+    context: Activity?,
     navController: NavController,
     animeViewModel: AnimeViewModel, onAnimeClick: (Int) -> Unit = {},
     mangaViewModel: MangaViewModel, onMangaClick: (Int) -> Unit = {},
@@ -75,45 +167,25 @@ fun TopScreen(
     var active by remember { mutableStateOf(false) }
     var showSuggestions by remember { mutableStateOf(true) }
 
+    val context = LocalActivity.current
+
     Column(modifier = Modifier.fillMaxSize())
     {
-        SearchBar(
-            query = searchText,
-            onQueryChange = {
-                searchText = it
-                showSuggestions = it.isNotBlank()
-            },
-            onSearch = { query ->
-                showSuggestions = false
-                val action = HomeFragmentDirections.actionGlobalNavSearch(query)
-                navController.navigate(action)
-            },
-            active = false,
-            onActiveChange = { /* DO NOTHING */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
-            placeholder = { Text("Search anime or manga...") },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
-                )
-            }
-        ) {
-        }
+        SearchBarWithDropdown(navController)
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
 
             // Anime Section
             if (topAnimeState is ApiResponse.Loading) {
-                loadingIndicator()
+                loadingIndicator(context!!)
             }
             if (topAnimeState is ApiResponse.Success) {
+                context?.toggleLoading(false)
                 top10AnimePart(
                     animeExpanded, topAnimeState, onAnimeClick,
                     onToggleExpanded = { animeExpanded = !animeExpanded })
             } else if (topAnimeState is ApiResponse.Error) {
+                context?.toggleLoading(false)
                 item {
                     Text(
                         text = "Error loading top anime: ${(topAnimeState as ApiResponse.Error).message}",
@@ -128,13 +200,17 @@ fun TopScreen(
 
             // Manga Section
             if (topMangaState is ApiResponse.Loading) {
-                loadingIndicator()
+                loadingIndicator(context!!)
             }
             if (topMangaState is ApiResponse.Success) {
+                context?.toggleLoading(false)
+
                 top10MangaPart(
                     mangaExpanded, topMangaState, onMangaClick,
                     onToggleExpanded = { mangaExpanded = !mangaExpanded })
             } else if (topMangaState is ApiResponse.Error) {
+                context?.toggleLoading(false)
+
                 item {
                     Text(
                         text = "Error loading top manga: ${(topMangaState as ApiResponse.Error).message}",
@@ -147,13 +223,17 @@ fun TopScreen(
 
             // Character Section
             if (topCharacterState is ApiResponse.Loading) {
-                loadingIndicator()
+                loadingIndicator(context!!)
             }
             if (topCharacterState is ApiResponse.Success) {
+                context?.toggleLoading(false)
+
                 top10CharactersPart(
                     characterExpanded, topCharacterState, onCharacterClick,
                     onToggleExpanded = { characterExpanded = !characterExpanded })
             } else if (topCharacterState is ApiResponse.Error) {
+                context?.toggleLoading(false)
+
                 item {
                     Text(
                         text = "Error loading top characters: ${(topCharacterState as ApiResponse.Error).message}",
@@ -166,13 +246,17 @@ fun TopScreen(
 
             // People section
             if (topPeopleState is ApiResponse.Loading) {
-                loadingIndicator()
+                loadingIndicator(context!!)
             }
             if (topPeopleState is ApiResponse.Success) {
+                context?.toggleLoading(false)
+
                 top10PeoplePart(
                     peopleExpanded, topPeopleState, onPeopleClick,
                     onToggleExpanded = { peopleExpanded = !peopleExpanded })
             } else if (topPeopleState is ApiResponse.Error) {
+                context?.toggleLoading(false)
+
                 item {
                     Text(
                         text = "Error loading top people: ${(topPeopleState as ApiResponse.Error).message}",
@@ -186,19 +270,20 @@ fun TopScreen(
     }
 }
 
-fun LazyListScope.loadingIndicator() {
-    item {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(40.dp)
-            )
-        }
-    }
+fun LazyListScope.loadingIndicator(context: Activity) {
+    context.toggleLoading(true)
+//    item {
+////        Box(
+////            modifier = Modifier
+////                .fillMaxWidth()
+////                .padding(16.dp),
+////            contentAlignment = Alignment.Center
+////        ) {
+////            CircularProgressIndicator(
+////                modifier = Modifier.size(40.dp)
+////            )
+////        }
+//    }
 }
 
 private fun LazyListScope.top10AnimePart(

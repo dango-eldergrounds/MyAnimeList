@@ -65,7 +65,7 @@ import com.example.myanimelist.data.local.theme.ThemeEntity
         // Character entity
         CharacterEntity::class, AnimeCharacterCrossRef::class, MangaCharacterCrossRef::class,
         PeopleEntity::class],
-    version = 10
+    version = 11
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

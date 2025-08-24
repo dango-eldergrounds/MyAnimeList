@@ -51,4 +51,28 @@ class PeopleRepository @Inject constructor(
             }
         }
     }
+
+    fun searchPeople(
+        query: String,
+        orderBy: String? = null,
+        sort: String? = null,
+        startsWith: String? = null,
+        limit: Int? = 10,
+        page: Int? = null
+    ): Flow<ApiResponse<List<PeopleDto>>> = flow {
+        emit(ApiResponse.Loading)
+        try {
+            val response = apiService.getPeopleSearch(
+                query = query,
+                orderBy = orderBy,
+                sort = sort,
+                startsWith = startsWith,
+                limit = limit,
+                page = page
+            )
+            emit(ApiResponse.Success(response.data))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(e.message ?: "Unknown error"))
+        }
+    }
 }
