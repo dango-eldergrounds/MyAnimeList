@@ -20,8 +20,6 @@ fun AnimeDetailScreen(
     animeViewModel: AnimeViewModel,
     navController: NavController
 ) {
-    var isSynopsisExpanded by remember { mutableStateOf(true) }
-    var isTitlesExpanded by remember { mutableStateOf(true) }
     var isCharactersExpanded by remember { mutableStateOf(true) }
 
     val selectedAnime by animeViewModel.selectedAnimeWithCharacters.collectAsState()
@@ -44,24 +42,30 @@ fun AnimeDetailScreen(
                 "Anime loaded: ${anime.title} Characters: ${animeWithCharacters.characters.count()}"
             )
             DetailScreen(
+                type = "Anime",
                 navController,
                 imageUrl = anime.images.jpg.largeImageUrl,
-                title = anime.title,
-                enTitle = anime.titleEnglish ?: "", jpTitle = anime.titleJapanese ?: "",
-                isTitlesExpanded = isTitlesExpanded,
-                onTitlesExpanded = {
-                    isTitlesExpanded = !isTitlesExpanded
+                titles = Titles(
+                    defaultTitle = anime.title,
+                    enTitle = anime.titleEnglish ?: "",
+                    jpTitle = anime.titleJapanese ?: "",
+                ),
+                detailsContent = @Composable {
+                    AnimeDetailsCard(
+                        score = anime.score,
+                        rank = anime.rank,
+                        popularity = anime.popularity,
+                        members = anime.members,
+                        favorites = anime.favorites,
+                        episodes = anime.episodes ?: 0,
+                        source = anime.source ?: "Unknown",
+                        status = anime.status,
+                        rating = anime.rating
+                    )
                 },
                 synopsis = anime.synopsis ?: "",
-                isSynopsisExpanded = isSynopsisExpanded,
-                onSynopsisExpanded = {
-                    isSynopsisExpanded = !isSynopsisExpanded
-                },
-                characters = animeWithCharacters.characters,
-                isCharactersExpanded = isCharactersExpanded,
-                onCharactersExpanded = {
-                    isCharactersExpanded = !isCharactersExpanded
-                })
+                characters = animeWithCharacters.characters
+            )
         }
 
         is ApiResponse.Error -> {

@@ -22,6 +22,7 @@ fun MangaDetailScreen(
     var isSynopsisExpanded by remember { mutableStateOf(true) }
     var isTitlesExpanded by remember { mutableStateOf(true) }
     var isCharactersExpanded by remember { mutableStateOf(true) }
+    var isAuthorsExpanded by remember { mutableStateOf(false) }
 
     val selectedManga by mangaViewModel.selectedMangaWithCharacters.collectAsState()
     when (selectedManga) {
@@ -36,24 +37,25 @@ fun MangaDetailScreen(
             .Success<MangaDtoWithCharacters>).data
             val manga = mangaWithCharacters.manga
             DetailScreen(
+                type = "Manga",
                 navController,
                 imageUrl = manga.images.jpg.largeImageUrl,
-                title = manga.title,
-                enTitle = manga.titleEnglish, jpTitle = manga.titleJapanese,
-                isTitlesExpanded = isTitlesExpanded,
-                onTitlesExpanded = {
-                    isTitlesExpanded = !isTitlesExpanded
+                titles = Titles(manga.title, manga.titleEnglish, manga.titleJapanese),
+                detailsContent = @Composable {
+                    MangaDetailsCard(
+                        score = manga.score,
+                        rank = manga.rank,
+                        popularity = manga.popularity,
+                        members = manga.members,
+                        favorites = manga.favorites,
+                        chapters = manga.chapters,
+                        volumes = manga.volumes,
+                        status = manga.status,
+                    )
                 },
                 synopsis = manga.synopsis,
-                isSynopsisExpanded = isSynopsisExpanded,
-                onSynopsisExpanded = {
-                    isSynopsisExpanded = !isSynopsisExpanded
-                },
                 characters = mangaWithCharacters.characters,
-                isCharactersExpanded = isCharactersExpanded,
-                onCharactersExpanded = {
-                    isCharactersExpanded = !isCharactersExpanded
-                }
+                authors = manga.authors
             )
         }
 

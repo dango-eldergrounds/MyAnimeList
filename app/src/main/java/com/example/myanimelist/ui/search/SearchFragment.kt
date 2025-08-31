@@ -8,26 +8,24 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -65,15 +63,36 @@ class SearchFragment : Fragment() {
                 val characterViewModel: CharacterViewModel = hiltViewModel()
                 val peopleViewModel: PeopleViewModel = hiltViewModel()
                 val navController: NavController = findNavController()
-                SearchScreen(
-                    query = args.query,
-                    type = args.type,
-                    animeViewModel = animeViewModel,
-                    mangaViewModel = mangaViewModel,
-                    characterViewModel = characterViewModel,
-                    peopleViewModel = peopleViewModel,
-                    navController
-                )
+
+                val queryFlow = navController.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.getStateFlow("query", args.query)
+
+                val typeFlow = navController.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.getStateFlow("type", args.type)
+
+                val query by queryFlow?.collectAsState() ?: remember { mutableStateOf(args.query) }
+                val type by typeFlow?.collectAsState() ?: remember { mutableStateOf(args.type) }
+
+                Column(modifier = Modifier.fillMaxSize())
+                {
+                    SearchBarWithDropdown(
+                        navController,
+                        query,
+                        defaultType = type,
+                        isFromSearchFragment = true
+                    )
+                    SearchScreen(
+                        query = query,
+                        type = type,
+                        animeViewModel = animeViewModel,
+                        mangaViewModel = mangaViewModel,
+                        characterViewModel = characterViewModel,
+                        peopleViewModel = peopleViewModel,
+                        navController
+                    )
+                }
             }
         }
     }
@@ -90,7 +109,7 @@ fun SearchScreen(
     peopleViewModel: PeopleViewModel,
     navController: NavController
 ) {
-    LaunchedEffect(query) {
+    LaunchedEffect(query, type) {
         when (type) {
             "Anime" -> {
                 animeViewModel.searchAnime(query, type)
@@ -120,11 +139,11 @@ fun SearchScreen(
         }
     }
 
-    Text(
-        text = "Results for \"$query\"",
-        textAlign = TextAlign.Center,
-        modifier = Modifier.padding(8.dp)
-    )
+//    Text(
+//        text = "Results for \"$query\"",
+//        textAlign = TextAlign.Center,
+//        modifier = Modifier.padding(8.dp)
+//    )
 
     val searchAnimeState by animeViewModel.searchResults.collectAsState()
     var animeExpanded by rememberSaveable { mutableStateOf(true) }
@@ -149,20 +168,22 @@ fun SearchScreen(
             } else if (searchAnimeState is ApiResponse.Success) {
                 val successData = (searchAnimeState as ApiResponse.Success<List<AnimeDto>>).data
                 val sorted = successData.sortedByDescending { it.favorites }
-                resultsSectionHeader(
-                    "Anime Results",
-                    animeExpanded
-                ) { animeExpanded = !animeExpanded }
-                items(sorted.take(itemsCount)) { anime ->
-                    ResultsList(
-                        visible = animeExpanded,
-                        malId = anime.malId,
-                        imageUrl = anime.images.jpg.largeImageUrl,
-                        title = anime.title,
-                        subtitle = "(${anime.type}, ${extractLastYear(anime.aired.string)})",
-                        mediaType = "anime",
-                        navController = navController
-                    )
+                if (successData.isNotEmpty()) {
+                    resultsSectionHeader(
+                        "Anime Results",
+                        animeExpanded
+                    ) { animeExpanded = !animeExpanded }
+                    items(sorted.take(itemsCount)) { anime ->
+                        ResultsList(
+                            visible = animeExpanded,
+                            malId = anime.malId,
+                            imageUrl = anime.images.jpg.largeImageUrl,
+                            title = anime.title,
+                            subtitle = "(${anime.type}, ${extractLastYear(anime.aired.string)})",
+                            mediaType = "anime",
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
@@ -173,20 +194,22 @@ fun SearchScreen(
             } else if (searchMangaState is ApiResponse.Success) {
                 val successData = (searchMangaState as ApiResponse.Success<List<MangaDto>>).data
                 val sorted = successData.sortedByDescending { it.favorites }
-                resultsSectionHeader(
-                    "Manga Results",
-                    mangaExpanded
-                ) { mangaExpanded = !mangaExpanded }
-                items(sorted.take(itemsCount)) { manga ->
-                    ResultsList(
-                        visible = mangaExpanded,
-                        malId = manga.malId,
-                        imageUrl = manga.images.jpg.largeImageUrl,
-                        title = manga.title,
-                        subtitle = "(${manga.type}, ${extractLastYear(manga.published.string)})",
-                        mediaType = "manga",
-                        navController = navController
-                    )
+                if (successData.isNotEmpty()) {
+                    resultsSectionHeader(
+                        "Manga Results",
+                        mangaExpanded
+                    ) { mangaExpanded = !mangaExpanded }
+                    items(sorted.take(itemsCount)) { manga ->
+                        ResultsList(
+                            visible = mangaExpanded,
+                            malId = manga.malId,
+                            imageUrl = manga.images.jpg.largeImageUrl,
+                            title = manga.title,
+                            subtitle = "(${manga.type}, ${extractLastYear(manga.published.string)})",
+                            mediaType = "manga",
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
@@ -198,20 +221,22 @@ fun SearchScreen(
                 val successData =
                     (searchCharacterState as ApiResponse.Success<List<CharacterDto>>).data
                 val sorted = successData.sortedByDescending { it.favorites }
-                resultsSectionHeader(
-                    "Character Results",
-                    characterExpanded
-                ) { characterExpanded = !characterExpanded }
-                items(sorted.take(itemsCount)) { character ->
-                    ResultsList(
-                        visible = characterExpanded,
-                        malId = character.malId,
-                        imageUrl = character.images.jpg.imageUrl,
-                        title = character.name ?: "",
-                        subtitle = "",
-                        mediaType = "character",
-                        navController = navController
-                    )
+                if (successData.isNotEmpty()) {
+                    resultsSectionHeader(
+                        "Character Results",
+                        characterExpanded
+                    ) { characterExpanded = !characterExpanded }
+                    items(sorted.take(itemsCount)) { character ->
+                        ResultsList(
+                            visible = characterExpanded,
+                            malId = character.malId,
+                            imageUrl = character.images.jpg.imageUrl,
+                            title = character.name ?: "",
+                            subtitle = "",
+                            mediaType = "character",
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
@@ -222,20 +247,22 @@ fun SearchScreen(
             } else if (searchPeopleState is ApiResponse.Success) {
                 val successData = (searchPeopleState as ApiResponse.Success<List<PeopleDto>>).data
                 val sorted = successData.sortedByDescending { it.favorites }
-                resultsSectionHeader(
-                    "People Results",
-                    peopleExpanded
-                ) { peopleExpanded = !peopleExpanded }
-                items(sorted.take(itemsCount)) { people ->
-                    ResultsList(
-                        visible = peopleExpanded,
-                        malId = people.malId,
-                        imageUrl = people.images.jpg.imageUrl,
-                        title = people.name,
-                        subtitle = "",
-                        mediaType = "people",
-                        navController = navController
-                    )
+                if (successData.isNotEmpty()) {
+                    resultsSectionHeader(
+                        "People Results",
+                        peopleExpanded
+                    ) { peopleExpanded = !peopleExpanded }
+                    items(sorted.take(itemsCount)) { people ->
+                        ResultsList(
+                            visible = peopleExpanded,
+                            malId = people.malId,
+                            imageUrl = people.images.jpg.imageUrl,
+                            title = people.name,
+                            subtitle = "",
+                            mediaType = "people",
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
